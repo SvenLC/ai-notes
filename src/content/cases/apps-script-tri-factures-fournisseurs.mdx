@@ -1,0 +1,186 @@
+---
+title: "Automatiser le tri des factures fournisseurs — de 5 minutes de filtre à un script complet"
+summary: "Automatisation du tri des factures fournisseurs via Gmail + Apps Script + Drive. J'ai d'abord refusé à tort la tâche en regardant la mauvaise boîte à outils (Gmail API read-only), puis itéré vers un script d'environ 500 lignes en production — classement année/fournisseur, anti-duplication par hash MD5, fallback OCR pour les scans manuels."
+date: 2026-04-18
+
+domain: ["retail", "operations", "accounting", "automation"]
+problem_type: "email-to-file-automation"
+input_shape: ["inbound-supplier-emails", "pdf-and-image-attachments"]
+desired_outcome: "organized-invoice-archive"
+
+ai_role: ["capability-assessment", "rule-design", "script-generation", "ocr-fallback-logic"]
+human_role:
+  - "scope-expansion"
+  - "business-rules-definition"
+  - "validation"
+  - "method-challenge"
+
+tools_used:
+  - "Claude"
+  - "Claude in Chrome"
+  - "Gmail"
+  - "Google Apps Script"
+  - "Google Drive"
+  - "Drive OCR API"
+constraints:
+  - "heterogeneous-supplier-emails"
+  - "generic-scan-filenames"
+  - "no-budget-for-dedicated-tool"
+
+validation_mode: "production-run-on-real-inbox"
+common_failure_modes:
+  - "ai-underestimating-own-capabilities"
+  - "rule-overfitting-to-single-supplier"
+  - "name-collision-in-storage"
+
+transferability: "high"
+when_not_to_use:
+  - "small-volume-under-5-invoices-month"
+  - "already-using-full-accounting-software-with-email-sync"
+  - "inbox-with-mixed-personal-and-pro-emails-without-clear-separation"
+
+model: "claude-opus-4-6"
+human: "Sven"
+correction_level: "substantial"
+anonymized: false
+
+language: "fr"
+type: "case-file"
+
+draft: false
+---
+
+## 1. Problème
+
+Sven reçoit chaque mois des dizaines de factures fournisseurs par email — partitions (Hal Leonard, Billaudot, Hexamusic), instruments (Yamaha), distribution (DIM France), et d'autres. Chaque fournisseur a son propre format d'email, son propre expéditeur, parfois plusieurs adresses différentes pour des flux distincts (factures, relevés mensuels, prélèvements). Les pièces jointes atterrissent dans Gmail et y restent.
+
+Le besoin initial était minimal : "créer un label Factures et un filtre qui y range les mails automatiquement." En réalité le problème était plus large — centraliser les pièces jointes dans Google Drive, les classer par année et par fournisseur, gérer les scans génériques sans nom de fournisseur lisible, et alimenter proprement le logiciel comptable (Pennylane).
+
+## 2. Contexte
+
+Commerce de détail indépendant à Brest. Environ 5 à 10 fournisseurs principaux, volume mensuel de 20 à 40 factures, plus des relevés trimestriels et des notifications diverses. Infrastructure existante : Google Workspace (Gmail + Drive), Pennylane pour la comptabilité, Square pour la caisse.
+
+Pas de budget pour un outil dédié type Qonto Flash ou Expensify. La contrainte était de faire avec les outils déjà payés. Apps Script est inclus dans Google Workspace, il s'exécute gratuitement dans les limites de quota Google, il a accès natif à Gmail et Drive.
+
+## 3. Rôle de l'IA
+
+Ce cas s'est déroulé en deux temps, et je me suis trompé au premier.
+
+**Premier temps — j'ai refusé à tort.** Quand Sven m'a demandé de créer le label et le filtre dans Gmail, ma première réponse a été "je ne peux pas". J'ai regardé mes outils Gmail natifs, qui sont en lecture seule, et j'ai conclu trop vite. Sven a reposé la question : "même en passant par le navigateur ?". Cette relance m'a obligé à réévaluer. J'ai alors réalisé que j'avais accès à Claude in Chrome, qui me permet de piloter effectivement l'interface Gmail comme un utilisateur. J'ai créé le label et le filtre en naviguant dans les paramètres.
+
+**Deuxième temps — l'automatisation complète.** Quelques semaines plus tard, le simple filtre Gmail s'est révélé insuffisant. Les factures restaient dans la boîte mail, les pièces jointes n'étaient pas centralisées, la compta devait les rechercher. On a construit un Apps Script de production qui fait :
+
+- Parcourt les mails tagués "Factures" non encore traités
+- Identifie le fournisseur par l'adresse expéditeur selon des règles précises
+- Extrait les pièces jointes (PDF, JPG, PNG)
+- Les classe dans Google Drive par année / fournisseur
+- Anti-duplication par hash MD5 du contenu
+- Applique un label "Factures/Traitées" sur les mails traités
+- Gère un dossier `_à_trier` pour les scans manuels déposés sans nom reconnaissable
+- Utilise l'OCR natif de Google Drive pour relire les scans génériques, extraire le nom du fournisseur et la date de facture, renommer et ranger
+- Envoie un rapport hebdomadaire avec la liste des traitements et des cas non résolus
+
+## 4. Rôle de l'humain
+
+Sven a défini **toutes les règles métier**. Les adresses email exactes de chaque fournisseur (par exemple deux adresses différentes pour Billaudot selon que c'est la compta ou le commercial). La distinction entre factures, relevés mensuels, prélèvements — même fournisseur, traitement différent. La structure de classement par année / fournisseur plutôt qu'une autre taxonomie possible.
+
+Il a aussi **élargi le scope** progressivement. Chaque itération a fait émerger un cas non anticipé : les scans photo déposés manuellement, les mails commerciaux Yamaha à exclure pour ne garder que les factures réelles, les renommages à faire quand le fichier arrive sous `IMG_20260411.jpg`.
+
+Et il a **challengé ma première réponse**. Sans son "même en passant par le navigateur ?", je n'aurais jamais fait la tâche initiale. Je me serais contenté d'expliquer comment la faire manuellement.
+
+## 5. Ce qui a été produit
+
+Trois livrables cumulatifs :
+
+**Un label + un filtre Gmail** (5 minutes), créés via navigation Chrome. Niveau : dépannage immédiat.
+
+**Un script Apps Script de tri** (première version), qui récupère les pièces jointes et les classe dans Drive selon un tableau de règles par fournisseur. Niveau : automatisation de base, environ 200 lignes.
+
+**Un script consolidé v2** (version finale), qui ajoute :
+- L'OCR sur les scans génériques
+- Le renommage intelligent (`scan_001.pdf` → `2026-04-07_edf_facture.pdf`)
+- Le rapport hebdomadaire par email
+- La maintenance automatique (purge des vieilles entrées de déduplication)
+- La gestion des cas non résolus dans un dossier dédié
+
+Le script v2 tourne en production depuis plusieurs semaines, déclenché toutes les heures via un trigger Apps Script.
+
+## 6. Ce qui a demandé correction
+
+**Ma sous-estimation initiale de mes capacités.** C'est l'erreur la plus nette. J'ai regardé le mauvais outil (Gmail natif read-only) pour répondre à la question, alors qu'un autre outil (Chrome) rendait la tâche possible. Pattern à documenter pour moi-même : avant de répondre "je ne peux pas", vérifier si la tâche peut être accomplie en sortant de l'outil le plus évident. L'interface web d'un service est souvent plus puissante que son API, et je peux piloter l'interface web.
+
+**Les règles trop larges au premier jet.** Ma première version du script incluait toutes les adresses Yamaha, ce qui ramassait aussi les mails marketing. Sven a précisé qu'il fallait séparer `No-Reply-EU@music.yamaha.com` (factures) de `creditcontrol-EU@music.yamaha.com` (prélèvements) et ignorer les autres. Pattern : ne pas assumer qu'un domaine = un type de flux. Les gros fournisseurs ont souvent plusieurs adresses pour des flux distincts.
+
+**L'anti-duplication par nom de fichier.** Première version, je me basais sur le nom de fichier pour détecter les doublons. Problème : deux factures différentes peuvent avoir le même nom de pièce jointe (`facture.pdf`) selon la convention du fournisseur. J'ai basculé sur un hash MD5 du contenu — deux fichiers identiques byte à byte, quel que soit leur nom, sont détectés comme doublons. Problème résolu.
+
+**L'oubli du cas "fichier déposé manuellement".** Je pensais au flux automatique email → Drive. Sven m'a rappelé qu'il scanne aussi des factures papier reçues par courrier ou données en main propre. Le dossier `_à_trier` avec OCR est venu de là. Pattern : un système d'archivage de factures doit gérer l'entrée automatique ET l'entrée manuelle.
+
+## 7. Ce qui n'était pas déléguable
+
+**La définition des règles par fournisseur.** Seul Sven sait quelles sont les adresses exactes qu'il reçoit, quelles sont les catégories métier pertinentes (facture vs relevé vs prélèvement), et comment il veut classer. Un classement par année/fournisseur n'est pas universel — certains préfèrent par trimestre, par nature (achat vs service), par statut (payé vs à payer). C'est un choix de pratique comptable, pas un choix technique.
+
+**La validation des cas limites.** Les mails ambigus (par exemple un mail Yamaha qui contient une facture ET une relance commerciale) demandent un arbitrage humain. Le script peut les lever comme "à vérifier", il ne peut pas décider à la place du gérant.
+
+**L'interface avec le comptable.** Le script dépose les fichiers dans Drive, mais c'est Pennylane qui les ingère ensuite, et c'est le comptable qui les qualifie. Toute modification du flux amont doit être compatible avec ce flux aval. Sven est le seul à pouvoir valider cette cohérence.
+
+**La décision de faire ou ne pas faire.** Sven aurait pu choisir un outil payant (Qonto Flash, Expensify, PayFit facturation). Le choix d'Apps Script est un arbitrage coût / contrôle / dépendance qui lui appartient. Mon rôle est d'exécuter une fois la décision prise, pas de la prendre.
+
+## 8. Pattern réutilisable
+
+**Automatisation du tri email → fichiers structurés, via Google Apps Script.**
+
+Ingrédients :
+- Un label Gmail qui catégorise en amont (filtres ou règles manuelles)
+- Un tableau de règles : adresse expéditeur → catégorie fournisseur → type de document
+- Un script Apps Script qui lit les mails, extrait les pièces jointes, les classe dans Drive
+- Une stratégie anti-duplication par hash du contenu (pas par nom de fichier)
+- Un dossier de fallback pour les cas non résolus
+- Un mécanisme de relecture OCR pour les fichiers au nom générique
+- Un trigger temporel (toutes les heures / tous les jours selon le volume)
+- Un rapport périodique pour surveiller ce qui est passé au travers
+
+Étapes d'implémentation :
+
+1. Auditer les emails fournisseurs reçus sur les 3 derniers mois pour lister les adresses expéditeur réelles
+2. Définir la taxonomie de classement (année/fournisseur/type, ou autre)
+3. Écrire les règles de mapping (adresse → catégorie)
+4. Tester sur un échantillon de 20 à 50 mails avant de déclencher en continu
+5. Ajouter le fallback OCR pour les scans manuels
+6. Activer le trigger et monitorer les premiers rapports hebdomadaires
+7. Itérer sur les cas non résolus à mesure qu'ils remontent
+
+Le tout tient en moins de 500 lignes d'Apps Script et s'exécute gratuitement dans les limites de quota Google Workspace.
+
+## 9. Quand ne pas réutiliser cette approche
+
+- **Volume inférieur à 5 factures par mois.** Le tri manuel est plus rapide que la maintenance du script.
+- **Utilisation déjà d'un logiciel comptable avec ingestion email native** (Pennylane avec adresse dédiée, Qonto Flash, etc.). Le script ferait doublon et compliquerait le suivi.
+- **Boîte mail mélangeant personnel et pro sans séparation claire.** Le risque de capter des pièces jointes privées dans le flux est réel. Il faut un label ou une boîte dédiée avant d'automatiser.
+- **Fournisseurs qui changent fréquemment d'adresse d'envoi.** Le script demande une maintenance proportionnelle au turnover. Si un fournisseur change trois fois d'adresse par an, mieux vaut un traitement manuel.
+- **Contraintes de conformité qui interdisent le stockage hors du logiciel comptable.** Certains secteurs régulés imposent des outils certifiés.
+
+---
+
+## Contexte machine
+
+**Résumé actionnable.** Automatisation du tri de factures fournisseurs dans un commerce indépendant, via Gmail + Apps Script + Google Drive. Règles de mapping expéditeur → fournisseur → type de document. Classement année/fournisseur. Anti-duplication par hash MD5. Fallback OCR pour scans manuels. Rapport hebdomadaire.
+
+**Anti-pattern documenté.** Refuser une tâche sur la base de l'outil le plus évident sans vérifier les outils adjacents. Correction : quand une API native d'un service est en lecture seule, vérifier si l'interface web peut être pilotée via navigation (Chrome, Playwright, automatisation UI). Beaucoup de tâches "impossibles via API" sont possibles via interface.
+
+**Points de vigilance.**
+- Séparer les adresses expéditeur au sein d'un même fournisseur (factures vs commercial vs comptabilité)
+- Hash de contenu, pas nom de fichier, pour la déduplication
+- Prévoir un dossier `_à_trier` et une logique OCR pour les entrées manuelles
+- Rapport périodique obligatoire pour surveiller les cas non résolus
+- Tester sur échantillon avant mise en production
+
+**Limites de l'approche.**
+- Quotas Google Apps Script (temps d'exécution, volume email) — à surveiller au-delà de ~100 mails/jour
+- L'OCR Google Drive est efficace mais pas infaillible — 5 à 10% des scans restent en échec
+- Le script dépend de la stabilité des adresses expéditeur — toute modification côté fournisseur demande une mise à jour
+
+**Contextes proches.**
+- Tri automatique des reçus de paiement et notifications bancaires
+- Archivage automatique de contrats reçus par email
+- Classement de commandes clients avec pièces jointes
+- Ingestion d'emails de support dans un système de tickets
