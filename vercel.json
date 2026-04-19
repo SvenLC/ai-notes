@@ -16,6 +16,6 @@
     }
   ],
   "redirects": [
-    { "source": "/cases/:slug", "destination": "/cases/:slug/", "permanent": true }
+    { "source": "/cases/:slug([a-z0-9-]+)", "destination": "/cases/:slug/", "permanent": true }
   ]
 }
