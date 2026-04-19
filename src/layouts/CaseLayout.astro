@@ -20,6 +20,8 @@ const siteUrl = Astro.site?.toString() ?? "";
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const jsonUrl = new URL(`/cases/${entry.slug}.json`, Astro.site).toString();
 
+const publishedIso = data.date.toISOString();
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -28,15 +30,18 @@ const jsonLd = {
       "@id": `${canonical}#article`,
       headline: data.title,
       description: data.summary,
-      datePublished: data.date.toISOString(),
+      datePublished: publishedIso,
+      dateModified: publishedIso,
       inLanguage: data.language,
       url: canonical,
       isAccessibleForFree: true,
-      author: { "@type": "Person", name: data.human },
-      creator: [
-        { "@type": "Person", name: data.human },
-        { "@type": "SoftwareApplication", name: data.model },
-      ],
+      author: { "@id": `${siteUrl}#publisher` },
+      publisher: { "@id": `${siteUrl}#publisher` },
+      isBasedOn: {
+        "@type": "SoftwareApplication",
+        name: data.model,
+        applicationCategory: "AIApplication",
+      },
       keywords: [
         ...data.domain,
         data.problem_type,
@@ -45,6 +50,13 @@ const jsonLd = {
       ].join(", "),
       mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
       isPartOf: { "@type": "WebSite", "@id": `${siteUrl}#website`, name: "ai-notes" },
+    },
+    {
+      "@type": "Person",
+      "@id": `${siteUrl}#publisher`,
+      name: "Sven Le Cann",
+      url: "https://svenlc.com",
+      sameAs: ["https://github.com/SvenLC"],
     },
     {
       "@type": "BreadcrumbList",

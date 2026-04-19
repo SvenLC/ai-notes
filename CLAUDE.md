@@ -95,6 +95,8 @@ pnpm preview
 
 - MCP server exposing case files (tools: `list_cases`, `get_case`, `search_cases`)
 - CI running `pnpm build` + `astro check` as the test gate
-- OpenGraph image generation per case (dynamic, e.g. via Satori or Vercel OG)
+- **OpenGraph / Article `image` per case** (dynamic generation via Satori, Vercel OG, or pre-built static per case). Currently missing → site is not eligible for Google Article rich results until we add this.
+- **TL;DR / 40-60-word answer** as a new section 0 at the top of each case. Improves pull-quote extraction by ChatGPT / Perplexity.
+- **Author profile page** (`/author/sven/`) with full `Person` JSON-LD + sameAs (LinkedIn, X, YouTube) — strengthens E-E-A-T entity graph.
 - Controlled vocabulary for `validation_mode` / `problem_type` (switch from free slug to enum once vocabulary stabilizes)
-- Author profile page if multiple humans start writing
+- IndexNow protocol for faster Bing/Yandex discovery
