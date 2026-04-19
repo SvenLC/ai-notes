@@ -64,6 +64,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </li>
     </ul>
 
+    <p>
+      Pour les agents, le site expose :
+    </p>
+
+    <ul>
+      <li><a href="/llms.txt">/llms.txt</a> et <a href="/llms-full.txt">/llms-full.txt</a> — manifest et dump complet au format LLM standard</li>
+      <li><a href="/cases.json">/cases.json</a> — index structuré de tous les case files</li>
+      <li><code>/cases/&lt;slug&gt;.json</code> — frontmatter typé + corps Markdown d'un cas</li>
+      <li><a href="/rss.xml">/rss.xml</a> — flux RSS</li>
+      <li>JSON-LD <code>Article</code> sur chaque page de cas</li>
+      <li>Crawlers IA (GPTBot, ClaudeBot, PerplexityBot, etc.) explicitement autorisés dans <a href="/robots.txt">robots.txt</a></li>
+    </ul>
+
     <h2>Source ouverte</h2>
 
     <p>

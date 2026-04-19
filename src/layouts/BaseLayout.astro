@@ -2,9 +2,14 @@
 interface Props {
   title: string;
   description?: string;
+  ogType?: "website" | "article";
 }
 
-const { title, description = "Bibliothèque de cas réels de collaboration humain-IA." } = Astro.props;
+const {
+  title,
+  description = "Bibliothèque de cas réels de collaboration humain-IA.",
+  ogType = "website",
+} = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
@@ -15,7 +20,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="ai-notes" href="/rss.xml" />
+    <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
+    <link rel="alternate" type="text/plain" title="llms-full.txt" href="/llms-full.txt" />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="ai-notes" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <slot name="head" />
+
     <title>{title}</title>
   </head>
   <body>

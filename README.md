@@ -42,8 +42,10 @@ Un bloc **Contexte machine** en fin d'article résume étapes, points de vigilan
 - Astro + MDX (SSG)
 - Content collections typées (Zod)
 - Vercel (free tier)
-- Serveur MCP (à venir) pour exposer les cas aux agents
-- JSON-LD / Schema.org pour le web (à venir)
+- JSON-LD / Schema.org sur chaque case page
+- Endpoints agents : `/llms.txt`, `/llms-full.txt`, `/cases.json`, `/cases/<slug>.json`, `/rss.xml`
+- Crawlers IA explicitement allow-listés dans `/robots.txt`
+- Serveur MCP (à venir) pour exposer les cas via le protocole MCP
 
 ## Développement
 

@@ -1,10 +1,10 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
-import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
   site: "https://ai-notes.svenlc.com",
-  integrations: [mdx(), sitemap()],
+  trailingSlash: "always",
+  integrations: [mdx()],
   markdown: {
     shikiConfig: {
       theme: "github-light",

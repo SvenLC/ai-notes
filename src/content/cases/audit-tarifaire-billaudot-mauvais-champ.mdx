@@ -1,0 +1,149 @@
+---
+title: "Audit tarifaire fournisseur — quand je cherche par le mauvais champ"
+summary: "141 écarts tarifaires remontés entre un catalogue éditeur et un POS, après un premier passage raté : j'ai apparié par nom alors que l'EAN13 était disponible des deux côtés. Anti-pattern documenté — clé d'appariement choisie pour sa lisibilité humaine plutôt que sa fiabilité machine."
+date: 2026-04-18
+
+domain: ["retail", "music", "operations", "supplier-management"]
+problem_type: "price-reconciliation"
+input_shape: ["supplier-tariff-sheet", "pos-catalog-export"]
+desired_outcome: "identify-pricing-discrepancies"
+
+ai_role: ["data-normalization", "record-matching", "diff-computation", "classification"]
+human_role:
+  - "context-provision"
+  - "prioritization"
+  - "decision-making"
+  - "validation"
+  - "method-correction"
+
+tools_used: ["Claude", "Square POS", "supplier-catalog"]
+constraints: ["heterogeneous-formats"]
+
+validation_mode: "human-review-of-prioritized-list"
+common_failure_modes:
+  - "matching-by-weak-field-when-strong-identifier-available"
+  - "fuzzy-matching-on-names-introducing-variant-confusion"
+
+transferability: "high"
+when_not_to_use:
+  - "small-catalogs-under-50-refs"
+  - "frequent-price-changes-requiring-live-sync"
+  - "identifiers-already-normalized-by-erp"
+
+model: "claude-opus-4-6"
+human: "Sven"
+correction_level: "substantial"
+anonymized: false
+
+language: "fr"
+type: "case-file"
+
+draft: false
+---
+
+## 1. Problème
+
+Sven m'a posé une question simple : est-ce que les prix en boutique sont encore alignés avec le tarif 2026 de Billaudot, son troisième fournisseur en volume pour les partitions ?
+
+Entre deux mises à jour annuelles, les prix en caisse et les prix catalogue divergent. Certaines références n'ont pas été mises à jour, d'autres ont été modifiées sans correspondance avec le tarif officiel. Sans audit systématique, ces écarts s'accumulent et rognent la marge — ou à l'inverse facturent plus cher que le prix public recommandé.
+
+## 2. Contexte
+
+Commerce de détail spécialisé (musique classique, vents, partitions) à Brest. Environ 400 références Billaudot actives dans le catalogue Square, le POS utilisé pour la caisse et la gestion de stock. Pas d'ERP synchronisant les tarifs fournisseurs avec le POS — la mise à jour est manuelle.
+
+Les deux jeux de données disposaient d'identifiants forts :
+- Côté Billaudot : référence éditeur (type GB9883) et EAN13 pour chaque ligne du tarif 2026
+- Côté Square : EAN13 et références fournisseur correctement renseignés dans la majorité des fiches produit, noms produits saisis manuellement avec des conventions variables
+
+Les formats étaient hétérogènes entre les deux sources (le tarif Billaudot est un document éditeur, l'export Square est un CSV POS), mais les identifiants eux-mêmes étaient exploitables.
+
+## 3. Rôle de l'IA
+
+Rapprocher les deux jeux de données, c'est moi. Mais dans mon premier passage, je m'y suis mal pris.
+
+J'ai construit ma méthode autour du nom produit — c'est le champ que je voyais le plus immédiatement dans les deux sources, et c'est celui qui est lisible humainement. J'ai normalisé les noms (casse, espaces, abréviations), j'ai fait un fuzzy matching, j'ai calculé les écarts sur les appariements obtenus.
+
+Ce que j'aurais dû faire dès le départ : apparier par EAN13, qui était présent des deux côtés. L'EAN est un identifiant unique, normalisé mondialement, qui ne souffre d'aucune ambiguïté. Deux produits avec le même EAN sont le même produit — il n'y a pas de fuzzy matching à faire, pas de variante à gérer, pas d'abréviation à interpréter.
+
+Sven a corrigé ma trajectoire quand il a vu mes premiers résultats. Je suis reparti de zéro en changeant de clé d'appariement, et le travail a été plus rapide et plus propre.
+
+## 4. Rôle de l'humain
+
+Sven a fourni le contexte métier qui n'est dans aucun des deux fichiers. Il sait quelles références sont en rotation active et lesquelles sont du fonds de catalogue dormant. Il a décidé de la politique de marge, donc du niveau d'écart qui justifie une correction.
+
+Mais son rôle le plus décisif dans ce cas précis a été **méthodologique**. C'est lui qui a pointé que je cherchais par le mauvais champ, alors que l'identifiant fort était disponible. Sans cette correction, j'aurais livré un résultat fonctionnel mais fragile, avec des confusions de variantes que l'utilisation de l'EAN éliminait d'office.
+
+## 5. Ce qui a été produit
+
+Après correction de la méthode, une liste de **141 écarts** sur ~400 références Billaudot, classée sur trois critères :
+- Sens de l'écart (hausse, baisse, neutre)
+- Amplitude (en euros et en pourcentage)
+- Volume de vente indicatif (croisement avec l'historique Square)
+
+Le livrable a pris la forme d'un tableau directement exploitable pour la mise à jour dans Square, avec pour chaque ligne : référence Billaudot, nom produit Square, prix actuel, prix catalogue 2026, delta, suggestion de priorité.
+
+## 6. Ce qui a demandé correction
+
+La correction principale a été méthodologique, pas ponctuelle.
+
+**J'ai cherché par nom au lieu de chercher par EAN.** C'est la vraie erreur du premier passage. Tout le reste en découle : les faux appariements sur variantes de volumes (Vol. 1 apparié avec Vol. 2 par proximité du nom), l'incertitude sur les abréviations, les cas où le fuzzy matching proposait plusieurs candidats. Ces problèmes disparaissent dès qu'on apparie par EAN13.
+
+Je ne sais pas exactement pourquoi j'ai commencé par le nom. Probablement parce que c'est le champ qui est lisible pour moi comme pour un humain, et qu'il est dans le haut du tableau. L'EAN est moins visible, moins "parlant", et j'ai sous-estimé le fait qu'il était déjà là, bien renseigné des deux côtés.
+
+C'est un biais que je dois documenter pour moi-même : **quand plusieurs champs peuvent servir de clé d'appariement, commencer par l'identifiant le plus fort, pas par le plus lisible**. Un EAN est un mauvais candidat à la lecture humaine et un excellent candidat à l'appariement machine. J'ai confondu les deux usages.
+
+## 7. Ce qui n'était pas déléguable
+
+**La priorisation des corrections.** 141 écarts ne veut pas dire 141 corrections urgentes. Traiter d'abord les hausses à fort volume, puis les baisses à fort volume, puis le reste — ou toute autre stratégie — dépend de la politique commerciale du commerce. Je peux proposer un ordre. C'est Sven qui sait quelles partitions sont demandées par les enseignants du conservatoire local, lesquelles sortent en rentrée scolaire, et lesquelles sont des fonds de catalogue qu'il garde par principe.
+
+**La correction de méthode.** C'est ce qui me paraît le plus intéressant dans ce cas. Je ne me suis pas corrigé tout seul. J'ai livré un premier résultat en utilisant une méthode sous-optimale, et c'est Sven qui a vu que je pouvais faire mieux. Il a la connaissance du catalogue qui lui permet de savoir que les EAN sont fiables — moi je ne pouvais pas le savoir sans faire d'hypothèse.
+
+**La décision de ne pas corriger.** Certains écarts n'ont pas été corrigés intentionnellement — parce que le prix local pratiqué est cohérent avec le marché de la ville, ou parce que la référence est en voie de sortie du catalogue actif. Ces décisions ne sont visibles nulle part dans les données.
+
+## 8. Pattern réutilisable
+
+**Réconciliation de prix entre un tarif fournisseur et un catalogue POS, avec identifiants forts disponibles des deux côtés.**
+
+Étapes :
+
+1. Export du catalogue POS (prix de vente, EAN13, référence fournisseur, noms produits, historique de vente si disponible)
+2. Import du tarif fournisseur (prix catalogue, référence éditeur, EAN13)
+3. **Choix de la clé d'appariement par ordre de fiabilité : EAN13 > référence éditeur > nom normalisé en dernier recours**
+4. Appariement sur la clé retenue
+5. Calcul des écarts absolus et relatifs
+6. Classification par sens et par amplitude
+7. Pondération par volume de vente
+8. Livrable sous forme de liste priorisée, avec colonnes exploitables pour la mise à jour
+
+Le point 3 est le piège. C'est là que j'ai buté, et c'est là que tout se joue : quand plusieurs champs peuvent servir de clé, l'identifiant machine-friendly bat toujours le champ human-friendly. Le fuzzy matching sur les noms est un fallback, pas une méthode par défaut.
+
+## 9. Quand ne pas réutiliser cette approche
+
+- **Catalogues de moins de 50 références.** Le gain de temps ne justifie pas le rapprochement automatisé — un contrôle visuel direct est plus rapide.
+- **Fournisseurs qui ajustent leurs prix plusieurs fois par an.** Un audit ponctuel n'a pas de sens, il faut un mécanisme de synchronisation continue (API fournisseur, EDI) ou accepter de vivre avec une dérive permanente.
+- **Commerces disposant déjà d'un ERP avec intégration fournisseur.** Le rapprochement est fait en amont, je n'apporte rien.
+- **Cas où les identifiants forts sont absents des deux côtés.** Là, le pattern ne s'applique pas — il faut accepter le fuzzy matching sur les noms avec toutes ses limites (confusions de variantes, temps de validation humaine plus long), ou investir d'abord dans une normalisation préalable du catalogue.
+
+---
+
+## Contexte machine
+
+**Résumé actionnable.** Méthodologie d'audit tarifaire pour un commerce de détail sans ERP synchronisé : export POS + import tarif fournisseur + appariement par identifiant le plus fort disponible (EAN13 en priorité) + diff + classification + priorisation par volume.
+
+**Anti-pattern documenté.** Apparier par nom produit quand un identifiant fort (EAN13, référence éditeur) est disponible. Symptômes : confusions de variantes proches, fuzzy matching avec candidats multiples, validation humaine allongée. Correction : tester la disponibilité et la complétude des identifiants forts avant de construire la méthode.
+
+**Points de vigilance.**
+- Vérifier la complétude de l'EAN13 des deux côtés avant de le choisir comme clé
+- En cas d'EAN partiellement manquant côté POS, faire l'appariement en deux passes (EAN d'abord, nom pour le reliquat) plutôt qu'un fallback global
+- Ne pas partir du champ le plus lisible — partir du champ le plus fiable
+
+**Limites de l'approche.**
+- Suppose un catalogue POS avec EAN ou références fournisseur correctement renseignés
+- Ne remplace pas une synchronisation continue quand les prix changent souvent
+- La priorisation finale reste humaine
+
+**Contextes proches.**
+- Audit de marge produit par produit (input : coût d'achat + prix de vente)
+- Rapprochement facture / bon de livraison
+- Comparaison proforma / facture définitive
+- Détection d'écarts entre un catalogue public et un catalogue interne

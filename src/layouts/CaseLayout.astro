@@ -15,9 +15,44 @@ const dateFormatted = data.date.toLocaleDateString("fr-FR", {
   day: "numeric",
   timeZone: "UTC",
 });
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const jsonUrl = new URL(`/cases/${entry.slug}.json`, Astro.site).toString();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: data.title,
+  description: data.summary,
+  datePublished: data.date.toISOString(),
+  inLanguage: data.language,
+  url: canonical,
+  isAccessibleForFree: true,
+  author: { "@type": "Person", name: data.human },
+  creator: [
+    { "@type": "Person", name: data.human },
+    { "@type": "SoftwareApplication", name: data.model },
+  ],
+  keywords: [...data.domain, data.problem_type, ...data.ai_role, ...data.human_role].join(", "),
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+};
 ---
 
-<BaseLayout title={`${data.title} — ai-notes`} description={data.summary}>
+<BaseLayout
+  title={`${data.title} — ai-notes`}
+  description={data.summary}
+  ogType="article"
+>
+  <Fragment slot="head">
+    <meta property="article:published_time" content={data.date.toISOString()} />
+    <meta property="article:author" content={data.human} />
+    <link rel="alternate" type="application/json" title="Case file JSON" href={jsonUrl} />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(jsonLd)}
+    />
+  </Fragment>
   <article>
     <header class="case-header">
       <p class="meta">
