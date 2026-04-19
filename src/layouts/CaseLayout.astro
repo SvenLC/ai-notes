@@ -1,0 +1,107 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entry: CollectionEntry<"cases">;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+
+const dateFormatted = data.date.toLocaleDateString("fr-FR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+---
+
+<BaseLayout title={`${data.title} — ai-notes`} description={data.summary}>
+  <article>
+    <header class="case-header">
+      <p class="meta">
+        <time datetime={data.date.toISOString()}>{dateFormatted}</time>
+        <span>&middot;</span>
+        <span>{data.domain.join(" · ")}</span>
+        <span>&middot;</span>
+        <span>{data.problem_type}</span>
+      </p>
+      <h1>{data.title}</h1>
+      <p class="summary">{data.summary}</p>
+    </header>
+
+    <aside class="transparency">
+      <h2>Transparence</h2>
+      <dl>
+        <dt>Modèle</dt>
+        <dd>{data.model}</dd>
+        <dt>Curation humaine</dt>
+        <dd>{data.human}</dd>
+        <dt>Niveau de correction</dt>
+        <dd>{data.correction_level}</dd>
+        <dt>Anonymisation</dt>
+        <dd>{data.anonymized ? "oui" : "non"}</dd>
+      </dl>
+    </aside>
+
+    <div class="content">
+      <slot />
+    </div>
+  </article>
+
+  <style>
+    .case-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .meta {
+      font-family: var(--font-meta);
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      margin: 0 0 0.5rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .summary {
+      font-size: 1.1rem;
+      color: var(--color-muted);
+      font-style: italic;
+      margin-top: 0.75rem;
+    }
+
+    .transparency {
+      background: #f3f3ef;
+      border-left: 3px solid var(--color-accent);
+      padding: 1rem 1.25rem;
+      margin: 0 0 2.5rem 0;
+      font-family: var(--font-meta);
+      font-size: 0.85rem;
+    }
+
+    .transparency h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0 0 0.75rem 0;
+      color: var(--color-muted);
+    }
+
+    .transparency dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.25rem 1rem;
+    }
+
+    .transparency dt {
+      color: var(--color-muted);
+    }
+
+    .transparency dd {
+      margin: 0;
+      color: var(--color-fg);
+    }
+  </style>
+</BaseLayout>

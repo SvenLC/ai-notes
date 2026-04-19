@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import CaseLayout from "../../layouts/CaseLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("cases", ({ data }) => !data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<CaseLayout entry={entry}>
+  <Content />
+</CaseLayout>

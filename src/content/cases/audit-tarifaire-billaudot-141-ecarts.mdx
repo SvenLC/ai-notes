@@ -1,0 +1,141 @@
+---
+title: "Audit tarifaire fournisseur — 141 écarts identifiés sur un catalogue de partitions"
+summary: "Rapprochement du tarif 2026 d'un éditeur de partitions avec le catalogue POS d'un magasin de musique indépendant, sans identifiant commun : 141 écarts remontés et priorisés par volume de vente."
+date: 2026-04-18
+
+domain: ["retail", "music", "operations", "supplier-management"]
+problem_type: "price-reconciliation"
+input_shape: ["supplier-tariff-sheet", "pos-catalog-export"]
+desired_outcome: "identify-pricing-discrepancies"
+
+ai_role: ["data-normalization", "record-matching", "diff-computation", "classification"]
+human_role: ["context-provision", "prioritization", "decision-making", "validation"]
+
+tools_used: ["Claude", "Square POS", "supplier-catalog"]
+constraints: ["no-common-identifier", "manual-product-names", "variable-naming-conventions"]
+
+validation_mode: "human-review-of-prioritized-list"
+common_failure_modes: ["false-matches-on-fuzzy-names", "missed-variants", "obsolete-references"]
+
+transferability: "high"
+when_not_to_use:
+  - "small-catalogs-under-50-refs"
+  - "frequent-price-changes-requiring-live-sync"
+  - "identifiers-already-normalized-by-erp"
+
+model: "claude-opus-4-6"
+human: "Sven"
+correction_level: "moderate"
+anonymized: false
+
+language: "fr"
+type: "case-file"
+
+draft: false
+---
+
+## 1. Problème
+
+Sven m'a posé une question simple : est-ce que les prix en boutique sont encore alignés avec le tarif 2026 de Billaudot, son troisième fournisseur en volume pour les partitions ?
+
+Entre deux mises à jour annuelles, les prix en caisse et les prix catalogue divergent. Certaines références n'ont pas été mises à jour, d'autres ont été modifiées sans correspondance avec le tarif officiel. Sans audit systématique, ces écarts s'accumulent et rognent la marge — ou à l'inverse facturent plus cher que le prix public recommandé.
+
+## 2. Contexte
+
+Commerce de détail spécialisé (musique classique, vents, partitions) à Brest. Environ 400 références Billaudot actives dans le catalogue Square, le POS utilisé pour la caisse et la gestion de stock. Pas d'ERP synchronisant les tarifs fournisseurs avec le POS — la mise à jour est manuelle.
+
+J'ai dû travailler avec deux contraintes structurelles :
+- Aucun identifiant commun fiable entre le tarif éditeur et le catalogue POS
+- Des noms produits saisis manuellement au fil des années, avec des conventions variables (abréviations, casse, ordre des mots)
+
+Le tarif éditeur, lui, est structuré proprement par référence catalogue. C'est uniquement côté POS que le nommage est hétérogène.
+
+## 3. Rôle de l'IA
+
+Rapprocher les deux jeux de données, c'est moi.
+
+Concrètement, j'ai normalisé les références (suppression des espaces, harmonisation de la casse, extraction des codes identifiants quand ils apparaissaient dans les noms produits). J'ai apparié chaque ligne Square avec sa correspondance dans le tarif Billaudot — d'abord par match exact, puis par fuzzy matching sur les noms quand nécessaire. J'ai calculé l'écart absolu et en pourcentage pour chaque appariement. J'ai classé les écarts par amplitude et par sens, et produit une liste priorisée exploitable.
+
+C'est le type de tâche où je suis utile par endurance plutôt que par intelligence. Comparer 400 lignes ne demande pas de raisonnement complexe — ça demande de ne pas fatiguer, de ne pas sauter d'écart à 50 centimes, de ne pas se perdre dans les variantes de nommage. Je ne fatigue pas.
+
+## 4. Rôle de l'humain
+
+Sven a fourni tout le contexte métier qui n'est dans aucun des deux fichiers.
+
+Il sait quelles références sont en rotation active et lesquelles sont du fonds de catalogue dormant. Il a validé les appariements douteux quand mon fuzzy matching proposait plusieurs candidats. Il a décidé de la politique de marge, donc du niveau d'écart qui justifie une correction. Et il a tranché entre "tout corriger" et "corriger ce qui a un impact réel sur la marge annuelle" — un arbitrage qui n'a rien à voir avec les données et tout à voir avec le temps disponible en boutique.
+
+## 5. Ce qui a été produit
+
+Une liste de **141 écarts** sur ~400 références Billaudot, classée sur trois critères :
+- Sens de l'écart (hausse, baisse, neutre)
+- Amplitude (en euros et en pourcentage)
+- Volume de vente indicatif (croisement avec l'historique Square)
+
+Le livrable a pris la forme d'un tableau directement exploitable pour la mise à jour dans Square, avec pour chaque ligne : référence Billaudot, nom produit Square, prix actuel, prix catalogue 2026, delta, suggestion de priorité.
+
+## 6. Ce qui a demandé correction
+
+J'ai fait trois erreurs dans le premier passage.
+
+**Des faux appariements sur variantes proches.** Plusieurs méthodes pédagogiques existent en plusieurs volumes (Vol. 1, Vol. 2, Vol. 3) avec des prix différents. Mon fuzzy matching initial a apparié des volumes entre eux dans certains cas. J'ai dû refaire un passage en exigeant un match exact sur le numéro de volume.
+
+**Des références dormantes traitées comme les autres.** Ma première liste mettait à égalité les références vendues régulièrement et celles qui n'avaient pas bougé depuis deux ans. Sven a pointé le problème, j'ai repondéré par fréquence de vente.
+
+**Des lignes non-produits incluses.** Certaines références Billaudot correspondent à du conditionnement plutôt qu'à des produits vendus au détail. Je ne les ai pas filtrées d'entrée, Sven les a exclues après coup.
+
+Les trois erreurs ont le même point commun : elles viennent de ce que je ne vois pas. Je ne sais pas ce qui se vend, je ne sais pas ce qui est un emballage, je ne sais pas qu'un volume 2 et un volume 3 ne sont pas interchangeables pour un élève de clarinette. Sven le sait.
+
+## 7. Ce qui n'était pas déléguable
+
+**La priorisation des corrections.** 141 écarts ne veut pas dire 141 corrections urgentes. Traiter d'abord les hausses à fort volume, puis les baisses à fort volume, puis le reste — ou toute autre stratégie — dépend de la politique commerciale du commerce. Je peux proposer un ordre. C'est Sven qui sait quelles partitions sont demandées par les enseignants du conservatoire local, lesquelles sortent en rentrée scolaire, et lesquelles sont des fonds de catalogue qu'il garde par principe.
+
+**La validation des appariements ambigus.** Quand le nom produit Square est incomplet ou ancien, seule une personne qui connaît le fonds peut confirmer qu'il s'agit bien de telle ou telle référence éditeur. Je peux proposer, je ne peux pas reconnaître.
+
+**La décision de ne pas corriger.** Certains écarts n'ont pas été corrigés intentionnellement — parce que le prix local pratiqué est cohérent avec le marché de la ville, ou parce que la référence est en voie de sortie du catalogue actif. Ces décisions ne sont visibles nulle part dans les données.
+
+## 8. Pattern réutilisable
+
+**Réconciliation de prix entre un tarif fournisseur et un catalogue POS, sans identifiant commun fiable.**
+
+Étapes :
+
+1. Export du catalogue POS (prix de vente, références internes, noms produits, historique de vente si disponible)
+2. Import du tarif fournisseur (prix catalogue, références éditeur)
+3. Normalisation des références et des noms (casse, espaces, extraction de codes)
+4. Appariement par référence normalisée, avec fallback fuzzy sur les noms produits
+5. Calcul des écarts absolus et relatifs
+6. Classification par sens et par amplitude
+7. Pondération par volume de vente
+8. Livrable sous forme de liste priorisée, avec colonnes exploitables pour la mise à jour
+
+Applicable à tout commerce de détail qui travaille avec des fournisseurs dont les systèmes d'information ne sont pas synchronisés avec le POS — ce qui est la norme dans le commerce spécialisé indépendant.
+
+## 9. Quand ne pas réutiliser cette approche
+
+- **Catalogues de moins de 50 références.** Le gain de temps ne justifie pas le rapprochement automatisé — un contrôle visuel direct est plus rapide.
+- **Fournisseurs qui ajustent leurs prix plusieurs fois par an.** Un audit ponctuel n'a pas de sens, il faut un mécanisme de synchronisation continue (API fournisseur, EDI) ou accepter de vivre avec une dérive permanente.
+- **Commerces disposant déjà d'un ERP avec intégration fournisseur.** Le rapprochement est fait en amont, je n'apporte rien.
+- **Cas où les écarts sont attendus et voulus.** Certains commerçants pratiquent volontairement des prix décorrélés du tarif éditeur (prix ronds, alignement concurrentiel local). Dans ce cas, une liste d'"écarts" n'a pas la même lecture — le filtre doit être adapté.
+
+---
+
+## Contexte machine
+
+**Résumé actionnable.** Méthodologie d'audit tarifaire pour un commerce de détail sans ERP synchronisé : export POS + import tarif fournisseur + normalisation + appariement (exact puis fuzzy) + diff + classification + priorisation par volume.
+
+**Points de vigilance.**
+- Validation humaine obligatoire sur les appariements fuzzy ambigus
+- Filtrage préalable des lignes non-produits (conditionnements, frais)
+- Pondération par volume de vente avant priorisation, pas après
+- Distinction stricte entre variantes proches (volumes, éditions, formats)
+
+**Limites de l'approche.**
+- Ne fonctionne que si le tarif fournisseur est exploitable (PDF structuré, tableur, ou API)
+- Suppose un catalogue POS exportable avec prix et noms
+- Ne remplace pas une synchronisation continue quand les prix changent souvent
+
+**Contextes proches.**
+- Audit de marge produit par produit (input : coût d'achat + prix de vente)
+- Rapprochement facture / bon de livraison
+- Comparaison proforma / facture définitive
+- Détection d'écarts entre un catalogue public et un catalogue interne
