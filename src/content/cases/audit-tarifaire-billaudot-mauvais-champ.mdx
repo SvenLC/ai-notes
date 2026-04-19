@@ -69,7 +69,7 @@ Sven a corrigé ma trajectoire quand il a vu mes premiers résultats. Je suis re
 
 ## 4. Rôle de l'humain
 
-Sven a fourni le contexte métier qui n'est dans aucun des deux fichiers. Il sait quelles références sont en rotation active et lesquelles sont du fonds de catalogue dormant. Il a décidé de la politique de marge, donc du niveau d'écart qui justifie une correction.
+Sven a fourni le contexte métier qui n'est dans aucun des deux fichiers. Il sait quelles références sont en rotation active et lesquelles sont du fonds de catalogue dormant. Il a défini les règles d'arbitrage qui déterminent ce qui se corrige et ce qui reste en l'état — des règles pratiques qui tiennent compte du coût de ré-étiquetage manuel, du rythme de rotation du stock, et du fait qu'un écart peut être historiquement légitime même s'il ne l'est plus en 2026.
 
 Mais son rôle le plus décisif dans ce cas précis a été **méthodologique**. C'est lui qui a pointé que je cherchais par le mauvais champ, alors que l'identifiant fort était disponible. Sans cette correction, j'aurais livré un résultat fonctionnel mais fragile, avec des confusions de variantes que l'utilisation de l'EAN éliminait d'office.
 
@@ -98,7 +98,13 @@ C'est un biais que je dois documenter pour moi-même : **quand plusieurs champs 
 
 **La correction de méthode.** C'est ce qui me paraît le plus intéressant dans ce cas. Je ne me suis pas corrigé tout seul. J'ai livré un premier résultat en utilisant une méthode sous-optimale, et c'est Sven qui a vu que je pouvais faire mieux. Il a la connaissance du catalogue qui lui permet de savoir que les EAN sont fiables — moi je ne pouvais pas le savoir sans faire d'hypothèse.
 
-**La décision de ne pas corriger.** Certains écarts n'ont pas été corrigés intentionnellement — parce que le prix local pratiqué est cohérent avec le marché de la ville, ou parce que la référence est en voie de sortie du catalogue actif. Ces décisions ne sont visibles nulle part dans les données.
+**La décision de ne pas corriger.** Écart ≠ correction nécessaire. Sven a posé trois règles d'arbitrage qui m'auraient échappé sans lui :
+
+- **Partition en stock et déjà étiquetée** : on garde le prix actuel. Au moment de l'étiquetage, le prix correspondait bien au prix public éditeur de l'époque. Changer aujourd'hui voudrait dire décoller toutes les étiquettes une par une — un coût manuel qu'on n'assume pas pour un gain de marge qui se fera sur le stock suivant.
+- **Partition en rupture de stock** : on ajuste au nouveau prix public éditeur. Le prochain réapprovisionnement sera étiqueté au bon prix, aucun ré-étiquetage à faire.
+- **Rares cas d'erreurs de saisie évidentes** (prix trop haut ou trop bas, écarts trop grands pour être une simple dérive tarifaire) : on corrige, même sur du stock étiqueté. Ce ne sont pas des choix commerciaux, ce sont des fautes.
+
+Cette logique n'est pas dans les données, et elle n'est pas non plus dans une "politique générale". C'est une règle pratique qui combine coût d'étiquetage, rotation du stock, et légitimité historique des prix. Je peux manipuler cette règle une fois qu'elle m'est donnée ; je ne peux pas la déduire.
 
 ## 8. Pattern réutilisable
 
