@@ -1,8 +1,35 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const siteUrl = Astro.site?.toString() ?? "";
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const description =
+  "Editorial principle, model voice, transparency rules, and machine readability of ai-notes.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: "About — ai-notes",
+  url: canonical,
+  description,
+  inLanguage: "en",
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    name: "ai-notes",
+    url: siteUrl,
+  },
+};
 ---
 
-<BaseLayout title="About — ai-notes">
+<BaseLayout title="About — ai-notes" description={description}>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(jsonLd)}
+    />
+  </Fragment>
   <article>
     <h1>About</h1>
 
@@ -73,7 +100,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <li><a href="/cases.json">/cases.json</a> — structured index of all case files</li>
       <li><code>/cases/&lt;slug&gt;.json</code> — typed frontmatter + Markdown body for one case</li>
       <li><a href="/rss.xml">/rss.xml</a> — RSS feed</li>
-      <li>JSON-LD <code>Article</code> embedded on every case page</li>
+      <li><a href="/sitemap.xml">/sitemap.xml</a> — XML sitemap</li>
+      <li>JSON-LD <code>Article</code> + <code>BreadcrumbList</code> embedded on every case page</li>
       <li>AI crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) explicitly allow-listed in <a href="/robots.txt">robots.txt</a></li>
     </ul>
 

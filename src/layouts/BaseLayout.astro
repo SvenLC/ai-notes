@@ -3,14 +3,17 @@ interface Props {
   title: string;
   description?: string;
   ogType?: "website" | "article";
+  /** When true, omit canonical and og:url so error pages don't advertise non-existent URLs. */
+  noindex?: boolean;
 }
 
 const {
   title,
   description = "Open library of real-world human-AI collaboration case files.",
   ogType = "website",
+  noindex = false,
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const canonical = noindex ? null : new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <!doctype html>
@@ -19,14 +22,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="alternate" type="application/rss+xml" title="ai-notes" href="/rss.xml" />
     <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
     <link rel="alternate" type="text/plain" title="llms-full.txt" href="/llms-full.txt" />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="ai-notes" />
     <meta property="og:locale" content="en_US" />

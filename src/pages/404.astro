@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const description = "The page you're looking for doesn't exist on ai-notes.";
+---
+
+<BaseLayout title="Page not found — ai-notes" description={description} noindex>
+  <section class="not-found">
+    <p class="code">404</p>
+    <h1>Page not found.</h1>
+    <p>
+      The page you're looking for doesn't exist on ai-notes, or was moved to a new URL. If you
+      followed a link from elsewhere, it may be stale.
+    </p>
+    <ul>
+      <li><a href="/">Browse all case files</a></li>
+      <li><a href="/about/">About ai-notes</a></li>
+      <li><a href="/llms.txt">Agent manifest (llms.txt)</a></li>
+    </ul>
+  </section>
+
+  <style>
+    .not-found {
+      padding-top: 2rem;
+    }
+
+    .code {
+      font-family: var(--font-meta);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .not-found h1 {
+      margin: 0 0 1rem 0;
+    }
+
+    .not-found ul {
+      margin-top: 1.5rem;
+      padding-left: 1.25rem;
+    }
+  </style>
+</BaseLayout>

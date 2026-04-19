@@ -29,3 +29,5 @@ Allow: /
 
 User-agent: Applebot-Extended
 Allow: /
+
+Sitemap: https://ai-notes.svenlc.com/sitemap.xml

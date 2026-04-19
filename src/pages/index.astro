@@ -4,9 +4,60 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 const cases = (await getCollection("cases", ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const siteUrl = Astro.site?.toString() ?? "";
+const description =
+  "Open library of real-world human-AI collaboration case files. Rigorous, documented, double-readable for humans and AI agents.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      name: "ai-notes",
+      url: siteUrl,
+      description,
+      inLanguage: "en",
+      publisher: { "@id": `${siteUrl}#publisher` },
+    },
+    {
+      "@type": "Blog",
+      "@id": `${siteUrl}#blog`,
+      isPartOf: { "@id": `${siteUrl}#website` },
+      name: "ai-notes",
+      url: siteUrl,
+      description,
+      inLanguage: "en",
+      publisher: { "@id": `${siteUrl}#publisher` },
+      blogPost: cases.map((entry) => ({
+        "@type": "BlogPosting",
+        headline: entry.data.title,
+        description: entry.data.summary,
+        datePublished: entry.data.date.toISOString(),
+        inLanguage: entry.data.language,
+        url: new URL(`/cases/${entry.slug}/`, Astro.site).toString(),
+      })),
+    },
+    {
+      "@type": "Person",
+      "@id": `${siteUrl}#publisher`,
+      name: "Sven Le Cann",
+      url: "https://svenlc.com",
+      sameAs: ["https://github.com/SvenLC"],
+    },
+  ],
+};
 ---
 
-<BaseLayout title="ai-notes">
+<BaseLayout title="ai-notes" description={description}>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(jsonLd)}
+    />
+  </Fragment>
   <section class="intro">
     <h1>Case files of human-AI collaboration.</h1>
     <p>

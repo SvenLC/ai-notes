@@ -16,25 +16,54 @@ const dateFormatted = data.date.toLocaleDateString(data.language, {
   timeZone: "UTC",
 });
 
+const siteUrl = Astro.site?.toString() ?? "";
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const jsonUrl = new URL(`/cases/${entry.slug}.json`, Astro.site).toString();
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Article",
-  headline: data.title,
-  description: data.summary,
-  datePublished: data.date.toISOString(),
-  inLanguage: data.language,
-  url: canonical,
-  isAccessibleForFree: true,
-  author: { "@type": "Person", name: data.human },
-  creator: [
-    { "@type": "Person", name: data.human },
-    { "@type": "SoftwareApplication", name: data.model },
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${canonical}#article`,
+      headline: data.title,
+      description: data.summary,
+      datePublished: data.date.toISOString(),
+      inLanguage: data.language,
+      url: canonical,
+      isAccessibleForFree: true,
+      author: { "@type": "Person", name: data.human },
+      creator: [
+        { "@type": "Person", name: data.human },
+        { "@type": "SoftwareApplication", name: data.model },
+      ],
+      keywords: [
+        ...data.domain,
+        data.problem_type,
+        ...data.ai_role,
+        ...data.human_role,
+      ].join(", "),
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+      isPartOf: { "@type": "WebSite", "@id": `${siteUrl}#website`, name: "ai-notes" },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "ai-notes",
+          item: siteUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: data.title,
+          item: canonical,
+        },
+      ],
+    },
   ],
-  keywords: [...data.domain, data.problem_type, ...data.ai_role, ...data.human_role].join(", "),
-  mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
 };
 ---
 

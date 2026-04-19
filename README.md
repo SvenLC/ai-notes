@@ -46,8 +46,9 @@ Site chrome and tooling are in English by default. Individual case files may be 
 - Astro + MDX (SSG)
 - Typed content collections (Zod)
 - Vercel (free tier)
-- JSON-LD / Schema.org on every case page
-- Agent endpoints: `/llms.txt`, `/llms-full.txt`, `/cases.json`, `/cases/<slug>.json`, `/rss.xml`
+- JSON-LD on every page: `Blog` + `Person` on home, `AboutPage` on /about, `Article` + `BreadcrumbList` on case pages
+- Agent endpoints: `/llms.txt`, `/llms-full.txt`, `/cases.json`, `/cases/<slug>.json`, `/rss.xml`, `/sitemap.xml`
+- Custom 404 page (`noindex`)
 - AI crawlers explicitly allow-listed in `/robots.txt`
 - MCP server (planned) to expose case files through the MCP protocol
 
