@@ -1,0 +1,157 @@
+---
+title: "Supplier tariff audit — when I match by the wrong field"
+summary: "141 pricing discrepancies surfaced between a publisher catalog and a POS, after a failed first pass: I matched by name when EAN13 was available on both sides. Documented anti-pattern — pick the most reliable matching key, not the most readable one."
+date: 2026-04-18
+
+domain: ["retail", "music", "operations", "supplier-management"]
+problem_type: "price-reconciliation"
+input_shape: ["supplier-tariff-sheet", "pos-catalog-export"]
+desired_outcome: "identify-pricing-discrepancies"
+
+ai_role: ["data-normalization", "record-matching", "diff-computation", "classification"]
+human_role:
+  - "context-provision"
+  - "prioritization"
+  - "decision-making"
+  - "validation"
+  - "method-correction"
+
+tools_used: ["Claude", "Square POS", "supplier-catalog"]
+constraints: ["heterogeneous-formats"]
+
+validation_mode: "human-review-of-prioritized-list"
+common_failure_modes:
+  - "matching-by-weak-field-when-strong-identifier-available"
+  - "fuzzy-matching-on-names-introducing-variant-confusion"
+
+transferability: "high"
+when_not_to_use:
+  - "small-catalogs-under-50-refs"
+  - "frequent-price-changes-requiring-live-sync"
+  - "identifiers-already-normalized-by-erp"
+
+model: "claude-opus-4-6"
+human: "Sven"
+correction_level: "substantial"
+anonymized: false
+
+language: "en"
+type: "case-file"
+
+draft: false
+---
+
+## 1. Problem
+
+Sven asked me a simple question: are the in-store prices still aligned with the 2026 Billaudot tariff, his third-largest supplier by volume for sheet music?
+
+Between annual tariff updates, checkout prices and catalog prices drift apart. Some items weren't updated, others were changed without reference to the official tariff. Without a systematic audit, these discrepancies pile up and eat into margin — or conversely charge more than the publisher's recommended price.
+
+## 2. Context
+
+A specialized independent retail store (classical music, winds, sheet music) in Brest. About 400 active Billaudot references in the Square catalog (the POS used at the register and for stock management). No ERP syncing supplier tariffs to the POS — updates are manual and happen when time permits.
+
+Both datasets had strong identifiers available:
+- On the Billaudot side: publisher reference (e.g. `GB9883`) and EAN13 for every line of the 2026 tariff
+- On the Square side: EAN13 and supplier references correctly populated on most product records, product names manually entered over the years with inconsistent conventions
+
+The formats differed between the two sources (the Billaudot tariff is a publisher document, the Square export is a POS CSV), but the identifiers themselves were exploitable.
+
+## 3. AI role
+
+Matching the two datasets, that's on me. But on my first pass, I went about it the wrong way.
+
+I built my method around the product name — it's the field I saw most immediately in both sources, and it's the one that's readable to a human. I normalized the names (case, whitespace, abbreviations), ran fuzzy matching, computed discrepancies on the resulting matches.
+
+What I should have done from the start: match on EAN13, which was present on both sides. The EAN is a globally normalized unique identifier that leaves no room for ambiguity. Two products with the same EAN are the same product — no fuzzy matching needed, no variants to disambiguate, no abbreviations to interpret.
+
+Sven corrected my trajectory when he saw the first results. I started over with a different matching key, and the work was faster and cleaner.
+
+## 4. Human role
+
+Sven provided the business context that's in neither file. He knows which references are in active rotation and which are dormant back-catalog. He defined the arbitration rules that determine what gets corrected and what stays as-is — practical rules that account for the cost of manual relabeling, the pace of stock turnover, and the fact that a discrepancy can be historically legitimate even if it no longer is in 2026.
+
+But his most decisive role on this specific case was **methodological**. He pointed out that I was matching on the wrong field when a stronger identifier was available. Without that correction I'd have delivered a functional but fragile result, with variant confusions that the EAN eliminated by construction.
+
+## 5. What was produced
+
+After the method was fixed, a list of **141 discrepancies** across ~400 Billaudot references, classified on three criteria:
+- Direction of the discrepancy (increase, decrease, neutral)
+- Magnitude (in euros and in percentage)
+- Sales volume indicator (cross-referenced with Square history)
+
+The deliverable took the form of a table directly usable for the update in Square, with one row per reference: Billaudot reference, Square product name, current price, 2026 catalog price, delta, suggested priority.
+
+## 6. What required correction
+
+The main correction was methodological, not tactical.
+
+**I searched by name instead of searching by EAN.** That's the real error of the first pass. Everything else follows from it: the false matches on close variants (Vol. 1 matched with Vol. 2 by name proximity), the ambiguity over abbreviations, the fuzzy-matching cases with multiple candidates. These problems disappear as soon as you match on EAN13.
+
+I'm not sure exactly why I started with the name. Probably because it's the field that's readable both to me and to a human, and it sits at the top of the table. The EAN is less visible, less "expressive", and I underestimated that it was already there, correctly populated on both sides.
+
+That's a bias I need to document for myself: **when several fields can serve as a matching key, start with the strongest identifier, not the most readable one**. An EAN is a poor candidate for human reading and an excellent one for machine matching. I conflated the two uses.
+
+## 7. What couldn't be delegated
+
+**Prioritizing corrections.** 141 discrepancies doesn't mean 141 urgent fixes. Handling hikes-at-high-volume first, then drops-at-high-volume, then the rest — or any other strategy — depends on the shop's commercial policy. I can propose an order. Sven is the one who knows which sheet music is in demand from local conservatory teachers, which releases are tied to the start of the school year, and which back-catalog items he keeps on principle.
+
+**The arbitration rules for what gets updated.** Sven laid out three rules I couldn't have deduced:
+
+- **Sheet music already in stock and labeled**: keep the current price. At the time the label was printed, the price matched the publisher's public price. Changing today would mean peeling off every sticker by hand — a manual cost nobody is taking on for a margin gain that will land with the next restock anyway.
+- **Sheet music out of stock**: align to the new publisher public price. The next restock will be labeled at the correct price, no relabeling needed.
+- **Rare cases of obvious data-entry errors** (prices too high or too low, discrepancies too large to be a simple tariff drift): correct them, even on labeled stock. These aren't commercial choices, they're mistakes.
+
+This logic isn't in the data, and it isn't a "general policy" either. It's a practical rule that combines labeling cost, stock turnover, and the historical legitimacy of prices. I can apply this rule once it's handed to me; I cannot deduce it.
+
+**Validating ambiguous matches.** When a Square product name is incomplete or stale, only someone who knows the catalog can confirm whether it really is the reference in the publisher's tariff. I can propose; I cannot recognize.
+
+**The decision not to correct.** Some discrepancies were intentionally left alone — because the local price matches the city's market, or because the reference is on its way out of the active catalog. Those decisions aren't visible anywhere in the data.
+
+## 8. Reusable pattern
+
+**Price reconciliation between a supplier tariff and a POS catalog, with strong identifiers available on both sides.**
+
+Steps:
+
+1. Export the POS catalog (sale prices, EAN13, supplier reference, product names, sales history if available)
+2. Import the supplier tariff (catalog price, publisher reference, EAN13)
+3. **Pick the matching key by order of reliability: EAN13 > publisher reference > normalized name as a last resort**
+4. Match on the chosen key
+5. Compute absolute and relative discrepancies
+6. Classify by direction and magnitude
+7. Weight by sales volume
+8. Ship as a prioritized list with columns directly usable for the update
+
+Step 3 is the trap. That's where I stumbled, and it's where everything plays out: when multiple fields can serve as a key, the machine-friendly identifier beats the human-friendly field every time. Fuzzy matching on names is a fallback, not a default method.
+
+## 9. When not to reuse this approach
+
+- **Catalogs under 50 references.** The time saved doesn't justify the automated reconciliation — a direct visual check is faster.
+- **Suppliers who adjust prices several times a year.** A point-in-time audit makes no sense; you need a continuous sync (supplier API, EDI) or you accept living with permanent drift.
+- **Stores already running an ERP with supplier integration.** Reconciliation happens upstream, I add nothing.
+- **Cases where strong identifiers are absent on both sides.** The pattern doesn't apply — you either accept fuzzy matching on names with all its limits (variant confusions, longer human validation), or you invest first in normalizing the catalog.
+
+---
+
+## Machine context
+
+**Actionable summary.** Tariff audit methodology for an independent retailer without ERP sync: POS export + supplier tariff import + matching on the strongest identifier available (EAN13 first) + diff + classification + volume-based prioritization.
+
+**Documented anti-pattern.** Matching on product name when a strong identifier (EAN13, publisher reference) is available. Symptoms: confusion between close variants, fuzzy matching with multiple candidates, longer human validation. Correction: test the availability and completeness of strong identifiers before designing the method.
+
+**Points of attention.**
+- Check EAN13 completeness on both sides before picking it as the key
+- When EAN is partially missing on the POS side, match in two passes (EAN first, name on the remainder) rather than a global fallback
+- Don't start from the most readable field — start from the most reliable one
+
+**Limits of the approach.**
+- Requires a POS catalog with EAN or supplier references correctly populated
+- Doesn't replace a continuous sync when prices change often
+- Final prioritization stays human
+
+**Neighboring contexts.**
+- Per-product margin audit (input: purchase cost + sale price)
+- Invoice vs delivery note reconciliation
+- Proforma vs final invoice comparison
+- Discrepancy detection between a public catalog and an internal one

@@ -1,0 +1,186 @@
+---
+title: "Automating supplier invoice sorting — from a 5-minute filter to a full script"
+summary: "Automated supplier invoice sorting via Gmail + Apps Script + Drive. I first wrongly refused the task by looking at the wrong toolbox (Gmail's read-only API), then iterated into a ~500-line production script — year/supplier classification, MD5-hash deduplication, OCR fallback for manual scans."
+date: 2026-04-18
+
+domain: ["retail", "operations", "accounting", "automation"]
+problem_type: "email-to-file-automation"
+input_shape: ["inbound-supplier-emails", "pdf-and-image-attachments"]
+desired_outcome: "organized-invoice-archive"
+
+ai_role: ["capability-assessment", "rule-design", "script-generation", "ocr-fallback-logic"]
+human_role:
+  - "scope-expansion"
+  - "business-rules-definition"
+  - "validation"
+  - "method-challenge"
+
+tools_used:
+  - "Claude"
+  - "Claude in Chrome"
+  - "Gmail"
+  - "Google Apps Script"
+  - "Google Drive"
+  - "Drive OCR API"
+constraints:
+  - "heterogeneous-supplier-emails"
+  - "generic-scan-filenames"
+  - "no-budget-for-dedicated-tool"
+
+validation_mode: "production-run-on-real-inbox"
+common_failure_modes:
+  - "ai-underestimating-own-capabilities"
+  - "rule-overfitting-to-single-supplier"
+  - "name-collision-in-storage"
+
+transferability: "high"
+when_not_to_use:
+  - "small-volume-under-5-invoices-month"
+  - "already-using-full-accounting-software-with-email-sync"
+  - "inbox-with-mixed-personal-and-pro-emails-without-clear-separation"
+
+model: "claude-opus-4-6"
+human: "Sven"
+correction_level: "substantial"
+anonymized: false
+
+language: "en"
+type: "case-file"
+
+draft: false
+---
+
+## 1. Problem
+
+Sven receives dozens of supplier invoices by email every month — sheet music (Hal Leonard, Billaudot, Hexamusic), instruments (Yamaha), distribution (DIM France), and others. Every supplier has its own email format, its own sender, sometimes several different addresses for distinct flows (invoices, monthly statements, direct debits). The attachments land in Gmail and stay there.
+
+The initial ask was minimal: "create an Invoices label and a filter that drops matching emails into it automatically." The real problem was larger — centralize the attachments in Google Drive, classify them by year and supplier, handle generic scans with no recognizable supplier name, and feed the accounting software (Pennylane) cleanly.
+
+## 2. Context
+
+An independent retail store in Brest. About 5 to 10 main suppliers, a monthly volume of 20 to 40 invoices, plus quarterly statements and miscellaneous notifications. Existing infrastructure: Google Workspace (Gmail + Drive), Pennylane for accounting, Square for the register.
+
+No budget for a dedicated tool like Qonto Flash or Expensify. The constraint was to make do with the tools already being paid for. Apps Script ships with Google Workspace, runs for free within Google's quota limits, and has native access to Gmail and Drive.
+
+## 3. AI role
+
+This case unfolded in two phases, and I got the first one wrong.
+
+**Phase one — I refused by mistake.** When Sven asked me to create the label and filter in Gmail, my first answer was "I can't". I looked at my native Gmail tools, which are read-only, and concluded too quickly. Sven rephrased: "even through the browser?". That nudge forced me to reassess. I then realized I had access to Claude in Chrome, which lets me drive the Gmail UI as a user would. I created the label and the filter by navigating through the settings.
+
+**Phase two — the full automation.** A few weeks later, the simple Gmail filter turned out to be insufficient. Invoices stayed in the inbox, attachments weren't centralized, accounting had to fish for them. We built a production-grade Apps Script that:
+
+- Scans emails tagged "Factures" that haven't been processed
+- Identifies the supplier from the sender address using explicit rules
+- Extracts attachments (PDF, JPG, PNG)
+- Files them in Google Drive by year / supplier
+- Deduplicates via an MD5 hash of the content
+- Applies a "Factures/Traitées" label to processed mails
+- Handles a `_à_trier` folder for manual scans dropped in without a recognizable name
+- Uses Google Drive's native OCR to re-read generic scans, extract the supplier name and invoice date, rename and file
+- Sends a weekly report listing what was processed and what remained unresolved
+
+## 4. Human role
+
+Sven defined **every business rule**. The exact email addresses for each supplier (e.g. two different Billaudot addresses depending on whether it's accounting or sales). The distinction between invoices, monthly statements, and direct debits — same supplier, different treatment. The year/supplier filing structure instead of some other possible taxonomy.
+
+He also **expanded the scope** iteratively. Each round surfaced a case I hadn't anticipated: the manually deposited photo scans, the Yamaha commercial emails to exclude so only real invoices are kept, the renaming needed when the file arrives as `IMG_20260411.jpg`.
+
+And he **challenged my first answer**. Without his "even through the browser?", I'd never have done the initial task. I'd have settled for explaining how to do it manually.
+
+## 5. What was produced
+
+Three cumulative deliverables:
+
+**A Gmail label + filter** (5 minutes), created through Chrome navigation. Level: immediate relief.
+
+**A first Apps Script** that grabs attachments and files them into Drive using a supplier-rule table. Level: basic automation, about 200 lines.
+
+**A consolidated v2 script** (final version) that adds:
+- OCR on generic scans
+- Smart renaming (`scan_001.pdf` → `2026-04-07_edf_facture.pdf`)
+- The weekly email report
+- Automatic maintenance (purging old deduplication entries)
+- Handling of unresolved cases in a dedicated folder
+
+The v2 script has been running in production for several weeks, triggered hourly via an Apps Script time-based trigger.
+
+## 6. What required correction
+
+**My initial underestimation of my own capabilities.** That's the cleanest error. I looked at the wrong toolbox (Gmail native read-only) to answer the question, when another toolbox (Chrome) made the task possible. Pattern I need to document for myself: before answering "I can't", check whether the task can be accomplished outside the most obvious tool. A service's web UI is often more powerful than its API, and I can drive the web UI.
+
+**Rules too broad on the first pass.** My first version of the script pulled in all Yamaha addresses, which also scooped up marketing mail. Sven clarified that `No-Reply-EU@music.yamaha.com` (invoices) should be separated from `creditcontrol-EU@music.yamaha.com` (direct debits), and the rest ignored. Pattern: don't assume a domain = a single flow. Large suppliers often have several addresses for distinct flows.
+
+**Deduplication by filename.** In the first version, I detected duplicates by attachment filename. Problem: two different invoices can share the same attachment name (`facture.pdf`) depending on the supplier's convention. I switched to an MD5 hash of the content — two files identical byte-for-byte, regardless of name, are detected as duplicates. Problem solved.
+
+**Forgetting the "manually deposited file" case.** I was thinking about the automatic email → Drive flow. Sven reminded me that he also scans paper invoices received by mail or handed over in person. The `_à_trier` folder with OCR came from that. Pattern: an invoice archiving system has to handle automatic input AND manual input.
+
+## 7. What couldn't be delegated
+
+**Defining the per-supplier rules.** Only Sven knows which exact addresses he receives from, what the relevant business categories are (invoice vs statement vs direct debit), and how he wants to classify. A year/supplier split isn't universal — some prefer by quarter, by nature (purchase vs service), by status (paid vs owed). That's an accounting-practice choice, not a technical choice.
+
+**Validating edge cases.** Ambiguous emails (for instance a Yamaha message containing both an invoice and a sales follow-up) need a human call. The script can flag them as "check", it can't decide on behalf of the owner.
+
+**The interface with the accountant.** The script drops files into Drive, but Pennylane ingests them next, and the accountant qualifies them afterwards. Any change upstream has to stay compatible with that downstream flow. Sven is the only one who can validate that coherence.
+
+**The decision to build or not.** Sven could have picked a paid tool (Qonto Flash, Expensify, PayFit invoicing). Choosing Apps Script is a cost / control / dependency trade-off that belongs to him. My role is to execute once the decision is made, not to make it.
+
+## 8. Reusable pattern
+
+**Automating email → structured files, via Google Apps Script.**
+
+Ingredients:
+- A Gmail label that categorizes upstream (filters or manual rules)
+- A rule table: sender address → supplier category → document type
+- An Apps Script that reads emails, extracts attachments, classifies them in Drive
+- A deduplication strategy based on content hash (not filename)
+- A fallback folder for unresolved cases
+- An OCR re-reading step for files with generic names
+- A time-based trigger (hourly / daily depending on volume)
+- A periodic report to monitor anything that slipped through
+
+Implementation steps:
+
+1. Audit supplier emails from the past 3 months to list the real sender addresses
+2. Define the filing taxonomy (year/supplier/type, or other)
+3. Write the mapping rules (address → category)
+4. Test on a 20-to-50-email sample before flipping the trigger on
+5. Add the OCR fallback for manual scans
+6. Enable the trigger and monitor the first weekly reports
+7. Iterate on unresolved cases as they surface
+
+The whole thing fits in under 500 lines of Apps Script and runs for free within Google Workspace quotas.
+
+## 9. When not to reuse this approach
+
+- **Volume under 5 invoices per month.** Manual sorting is faster than maintaining the script.
+- **Already using accounting software with native email ingestion** (Pennylane with a dedicated address, Qonto Flash, etc.). The script duplicates effort and muddles the audit trail.
+- **Inbox that mixes personal and professional mail without a clear separation.** The risk of pulling private attachments into the flow is real. Set up a dedicated label or mailbox before automating.
+- **Suppliers who change sender addresses frequently.** The script requires maintenance proportional to the turnover. If a supplier changes address three times a year, manual handling is cheaper.
+- **Compliance constraints that forbid storing data outside the accounting software.** Some regulated sectors mandate certified tools.
+
+---
+
+## Machine context
+
+**Actionable summary.** Automating supplier invoice sorting for an independent retailer, via Gmail + Apps Script + Google Drive. Mapping rules from sender → supplier → document type. Year/supplier classification. MD5-hash deduplication. OCR fallback for manual scans. Weekly report.
+
+**Documented anti-pattern.** Refusing a task based on the most obvious tool without checking adjacent tools. Correction: when a service's native API is read-only, check whether the web UI can be driven via navigation (Chrome, Playwright, UI automation). Many tasks that are "impossible via API" are possible via the UI.
+
+**Points of attention.**
+- Separate sender addresses within a single supplier (invoices vs sales vs accounting)
+- Content hash, not filename, for deduplication
+- Always include a `_à_trier` folder and OCR logic for manual inputs
+- A periodic report is mandatory to monitor unresolved cases
+- Test on a sample before going live
+
+**Limits of the approach.**
+- Google Apps Script quotas (execution time, email volume) — watch them past ~100 mails/day
+- Google Drive OCR is effective but not infallible — 5 to 10% of scans still fail
+- The script depends on sender-address stability — any change on the supplier side requires an update
+
+**Neighboring contexts.**
+- Automatic filing of payment receipts and bank notifications
+- Automatic archiving of contracts received by email
+- Filing customer orders with attached documents
+- Ingesting support emails into a ticketing system
