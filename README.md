@@ -1,53 +1,57 @@
 # ai-notes
 
-Bibliothèque ouverte de cas réels de collaboration humain-IA.
+Open library of real-world human-AI collaboration case files.
 
-## Ce que c'est
+## What it is
 
-Des case files documentés rigoureusement — où l'IA aide, accélère, structure, se trompe — et comment l'humain garde la maîtrise du résultat.
+Rigorously documented case files — where AI helps, accelerates, structures, fails — and how the human keeps control of the outcome.
 
-Double lisibilité : lisible par un humain, consommable par un agent (web search, RAG, MCP).
+Double readability: readable by a human, consumable by an agent (web search, RAG, MCP).
 
-## Ce que ça n'est pas
+## What it's not
 
-- Un blog corporate
-- Un canal d'acquisition déguisé
-- Un média d'opinion sur l'IA
-- Un exercice d'anthropomorphisme
-- Un catalogue de prompts
-- Une collection de démos impressionnantes sans ancrage métier
+- A corporate blog
+- A disguised acquisition channel
+- An opinion outlet about AI
+- An anthropomorphism exercise
+- A prompt catalog
+- A collection of impressive demos with no grounding
 
-## Format — case file en 9 points
+## Format — 9-point case file
 
-1. Problème
-2. Contexte
-3. Rôle de l'IA
-4. Rôle de l'humain
-5. Ce qui a été produit
-6. Ce qui a demandé correction
-7. Ce qui n'était pas déléguable
-8. Pattern réutilisable
-9. Quand ne pas réutiliser cette approche
+1. Problem
+2. Context
+3. AI role
+4. Human role
+5. What was produced
+6. What required correction
+7. What couldn't be delegated
+8. Reusable pattern
+9. When not to reuse this approach
 
-Un bloc **Contexte machine** en fin d'article résume étapes, points de vigilance, limites et contextes proches pour l'indexation par agents.
+A **Machine context** block at the end of each article summarizes steps, points of attention, limits and neighboring contexts for agent indexing.
 
-## Principes
+## Principles
 
-- **Transparence** : modèle utilisé, humain qui a cadré/validé, niveau de correction, anonymisation déclarée par article.
-- **Voix du modèle préservée** : pas de gros system prompt pour lisser le ton. Le cadre structure (9 points + métadonnées), l'IA parle comme elle parle. Un article écrit par Claude sonnera Claude, un par GPT sonnera GPT.
-- **Curation, pas rédaction** : le rôle humain c'est choisir quoi publier, vérifier les faits, refuser le mauvais. Pas de réécriture.
+- **Transparency**: model used, human who framed/validated, correction level, anonymization declared per article.
+- **Voice of the model preserved**: no heavy system prompt to smooth the tone. The frame provides structure (9 points + metadata), the AI speaks as it speaks. An article written by Claude will sound like Claude, one written by GPT will sound like GPT.
+- **Curation, not rewriting**: the human role is picking what to publish, verifying facts, rejecting what's poor. No rewriting.
+
+## Language
+
+Site chrome and tooling are in English by default. Individual case files may be written in other languages — each case declares its `language` in the frontmatter and is rendered accordingly.
 
 ## Stack
 
 - Astro + MDX (SSG)
-- Content collections typées (Zod)
+- Typed content collections (Zod)
 - Vercel (free tier)
-- JSON-LD / Schema.org sur chaque case page
-- Endpoints agents : `/llms.txt`, `/llms-full.txt`, `/cases.json`, `/cases/<slug>.json`, `/rss.xml`
-- Crawlers IA explicitement allow-listés dans `/robots.txt`
-- Serveur MCP (à venir) pour exposer les cas via le protocole MCP
+- JSON-LD / Schema.org on every case page
+- Agent endpoints: `/llms.txt`, `/llms-full.txt`, `/cases.json`, `/cases/<slug>.json`, `/rss.xml`
+- AI crawlers explicitly allow-listed in `/robots.txt`
+- MCP server (planned) to expose case files through the MCP protocol
 
-## Développement
+## Development
 
 ```bash
 pnpm install
@@ -56,16 +60,16 @@ pnpm build
 pnpm preview
 ```
 
-## Créer un nouveau case file
+## Creating a new case file
 
-1. Copier `templates/case-file.mdx` vers `src/content/cases/<slug>.mdx`
-2. Remplir les métadonnées du frontmatter
-3. Remplir les 9 sections + le bloc **Contexte machine**
-4. Passer `draft: false` quand prêt
+1. Copy `templates/case-file.mdx` into `src/content/cases/<slug>.mdx`
+2. Fill in the frontmatter metadata
+3. Fill in the 9 sections + the **Machine context** block
+4. Flip `draft: false` when ready
 
-Voir [`docs/editorial.md`](./docs/editorial.md) pour les conventions éditoriales, [`docs/anonymization.md`](./docs/anonymization.md) pour l'anonymisation, [`docs/metadata-schema.md`](./docs/metadata-schema.md) pour le schéma complet des métadonnées.
+See [`docs/editorial.md`](./docs/editorial.md) for editorial conventions, [`docs/anonymization.md`](./docs/anonymization.md) for anonymization rules, [`docs/metadata-schema.md`](./docs/metadata-schema.md) for the full metadata schema.
 
 ## License
 
-- Code : MIT (à confirmer)
-- Contenu : CC BY-SA 4.0 (à confirmer)
+- Code: MIT (to confirm)
+- Content: CC BY-SA 4.0 (to confirm)

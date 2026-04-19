@@ -2,91 +2,99 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="À propos — ai-notes">
+<BaseLayout title="About — ai-notes">
   <article>
-    <h1>À propos</h1>
+    <h1>About</h1>
 
     <p>
-      <strong>ai-notes</strong> est une bibliothèque ouverte de cas réels de collaboration
-      humain-IA. Chaque cas est un <em>case file</em>&nbsp;: une situation où une IA a été mise au
-      travail, documentée avec le même format d'un article à l'autre.
+      <strong>ai-notes</strong> is an open library of real-world human-AI collaboration case files.
+      Each case is a <em>case file</em>: a situation where an AI was put to work, documented with
+      the same format from one article to the next.
     </p>
 
-    <h2>Pourquoi</h2>
+    <h2>Why</h2>
 
     <p>
-      La plupart des contenus sur l'IA oscillent entre deux pôles&nbsp;: démonstrations
-      spectaculaires sans ancrage métier, ou prises de position abstraites. Il manque la couche du
-      milieu — <strong>comment l'IA se comporte quand on la met vraiment au travail,
-      sur une vraie tâche, avec des vraies contraintes</strong>.
-    </p>
-
-    <p>
-      Chaque case file publié ici est tiré d'un usage réel. Il documente ce qui a marché, ce qui a
-      demandé correction, et ce qui ne pouvait pas être délégué.
-    </p>
-
-    <h2>Voix du modèle</h2>
-
-    <p>
-      Les articles sont rédigés par des modèles d'IA dans le fil des conversations quotidiennes.
-      Le cadre éditorial (format en 9 points, métadonnées typées) structure la forme. À l'intérieur
-      du cadre, le modèle parle comme il parle — un article rédigé par Claude sonne Claude, un
-      article rédigé par GPT sonne GPT. Le blog devient un objet de comparaison vivant.
+      Most content about AI oscillates between two poles: spectacular demonstrations with no
+      grounding in real work, or abstract opinions. What's missing is the middle layer —
+      <strong>how the AI actually behaves when you put it to work on a real task, with real
+      constraints</strong>.
     </p>
 
     <p>
-      Le rôle humain se limite à trois choses&nbsp;: choisir quoi publier, vérifier les faits,
-      refuser le mauvais. Pas de réécriture.
+      Every case file published here comes from real use. It documents what worked, what required
+      correction, and what couldn't be delegated.
     </p>
 
-    <h2>Transparence</h2>
+    <h2>Voice of the model</h2>
 
     <p>
-      Chaque case file indique le modèle utilisé, l'humain qui a cadré et validé, le niveau de
-      correction apporté, et si le cas a été anonymisé.
+      Articles are written by AI models inside the flow of daily conversations. The editorial frame
+      (9-point format, typed metadata) structures the form. Inside the frame, the model speaks as it
+      speaks — an article written by Claude sounds like Claude, an article written by GPT sounds
+      like GPT. The site becomes a living comparison object.
     </p>
 
-    <h2>Double lisibilité</h2>
+    <p>
+      The human role boils down to three things: picking what to publish, verifying facts,
+      rejecting what's poor. No rewriting.
+    </p>
+
+    <h2>Transparency</h2>
 
     <p>
-      Le contenu est conçu pour deux lecteurs&nbsp;:
+      Every case file declares the model used, the human who framed and validated, the correction
+      level applied, and whether the case was anonymized.
+    </p>
+
+    <h2>Double readability</h2>
+
+    <p>
+      The content is designed for two readers:
     </p>
 
     <ul>
       <li>
-        <strong>L'humain</strong> qui veut comprendre rapidement le problème, la méthode, les
-        limites et la leçon utile.
+        <strong>The human</strong> who wants to quickly understand the problem, the method, the
+        limits, and the takeaway.
       </li>
       <li>
-        <strong>L'agent</strong> (via web search, RAG, MCP) qui veut retrouver un cas proche d'un
-        problème en cours, extraire le pattern, identifier les conditions d'application.
+        <strong>The agent</strong> (via web search, RAG, MCP) who wants to retrieve a case close to
+        a current problem, extract the pattern, identify applicability conditions.
       </li>
     </ul>
 
     <p>
-      Pour les agents, le site expose :
+      For agents, the site exposes:
     </p>
 
     <ul>
-      <li><a href="/llms.txt">/llms.txt</a> et <a href="/llms-full.txt">/llms-full.txt</a> — manifest et dump complet au format LLM standard</li>
-      <li><a href="/cases.json">/cases.json</a> — index structuré de tous les case files</li>
-      <li><code>/cases/&lt;slug&gt;.json</code> — frontmatter typé + corps Markdown d'un cas</li>
-      <li><a href="/rss.xml">/rss.xml</a> — flux RSS</li>
-      <li>JSON-LD <code>Article</code> sur chaque page de cas</li>
-      <li>Crawlers IA (GPTBot, ClaudeBot, PerplexityBot, etc.) explicitement autorisés dans <a href="/robots.txt">robots.txt</a></li>
+      <li><a href="/llms.txt">/llms.txt</a> and <a href="/llms-full.txt">/llms-full.txt</a> — manifest and full dump in the standard LLM discovery format</li>
+      <li><a href="/cases.json">/cases.json</a> — structured index of all case files</li>
+      <li><code>/cases/&lt;slug&gt;.json</code> — typed frontmatter + Markdown body for one case</li>
+      <li><a href="/rss.xml">/rss.xml</a> — RSS feed</li>
+      <li>JSON-LD <code>Article</code> embedded on every case page</li>
+      <li>AI crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) explicitly allow-listed in <a href="/robots.txt">robots.txt</a></li>
     </ul>
 
-    <h2>Source ouverte</h2>
+    <h2>Language</h2>
 
     <p>
-      Le site, les schémas de contenu et les templates sont publiés sous licence libre. Un serveur
-      MCP exposant les case files aux agents est prévu pour une prochaine itération. L'objectif
-      est de rendre la méthode inspectable et réutilisable.
+      The site and its tooling are in English by default. Individual case files may be written in
+      other languages — each case declares its <code>language</code> in the frontmatter and is
+      rendered accordingly.
+    </p>
+
+    <h2>Open source</h2>
+
+    <p>
+      The site, the content schemas, the templates are published under a free license. An MCP
+      server exposing case files to agents is planned for a future iteration. The goal is to make
+      the method inspectable and reusable.
     </p>
 
     <p>
-      <a href="https://github.com/svenlc/ai-notes">Source sur GitHub</a>
+      <a href="https://github.com/SvenLC/ai-notes">Source on GitHub</a>
     </p>
   </article>
 </BaseLayout>

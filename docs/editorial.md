@@ -1,53 +1,53 @@
-# Conventions éditoriales
+# Editorial conventions
 
-## Principe directeur
+## Guiding principle
 
-**Curation, pas rédaction.** Le rôle humain c'est choisir quoi publier, vérifier les faits, refuser le mauvais. Pas de réécriture du texte produit par le modèle.
+**Curation, not rewriting.** The human role is picking what to publish, verifying facts, rejecting what's poor. No rewriting of the text produced by the model.
 
-## Critères de publication
+## Publishing criteria
 
-Un cas mérite publication si au moins trois points suivants sont remplis :
+A case deserves publication if at least three of the following hold:
 
-- L'IA a effectivement contribué à un livrable concret
-- Une partie du travail a nécessité une correction humaine documentable
-- Au moins une décision n'était pas déléguable et peut être nommée
-- Le pattern est transposable (avec contre-indications claires)
-- Le cas apporte quelque chose de non-évident
+- The AI effectively contributed to a concrete deliverable
+- Part of the work required a documentable human correction
+- At least one decision couldn't be delegated and can be named
+- The pattern is transposable (with clear counter-indications)
+- The case brings something non-obvious
 
-Un cas est **refusé** si :
+A case is **rejected** if:
 
-- L'IA a tout fait sans valeur ajoutée de la collaboration
-- Le résultat est du vent et l'humain n'a pas corrigé
-- Le cas sert d'abord à mettre en scène un outil plutôt qu'à documenter une méthode
-- Les faits ne peuvent pas être vérifiés
+- The AI did everything with no value added by the collaboration
+- The output is hot air and the human didn't correct it
+- The case is primarily a vehicle to showcase a tool rather than document a method
+- The facts cannot be verified
 
-## Voix du modèle
+## Voice of the model
 
-Pas de system prompt qui lisse le ton. Le modèle écrit sa version du case file dans la conversation, l'humain relit, corrige les erreurs factuelles, et commit.
+No system prompt that smooths the tone. The model writes its version of the case file in the conversation, the human reviews, corrects factual errors, and commits.
 
-Si un modèle produit quelque chose de maladroit stylistiquement mais factuellement juste → on garde. C'est la voix du modèle.
+If a model produces something stylistically awkward but factually correct → we keep it. That's the model's voice.
 
-Si un modèle produit quelque chose de factuellement faux → on corrige ou on ne publie pas.
+If a model produces something factually wrong → we correct it or we don't publish.
 
 ## Format
 
-Tous les cas suivent le format case file en 9 points. Voir `templates/case-file.mdx`.
+Every case follows the 9-point case file format. See `templates/case-file.mdx`.
 
-Les sections peuvent être courtes (une phrase suffit parfois), mais aucune ne doit être supprimée. Une section vide est un signal que le cas n'est pas mûr.
+Sections can be short (a single sentence sometimes suffices), but none should be removed. An empty section is a signal that the case isn't ripe.
 
-## Fréquence
+## Cadence
 
-Objectif : un case file par semaine. Mieux vaut sauter une semaine que publier un cas faible.
+Target: one case file per week. Better to skip a week than publish a weak case.
 
-## Modèles acceptés
+## Accepted models
 
-Tout modèle conversationnel peut écrire un case file. Le champ `model` du frontmatter doit préciser la version exacte (ex. `claude-opus-4-7`, `gpt-5.4`, `gemini-3-pro`).
+Any conversational model may write a case file. The `model` field in the frontmatter must declare the exact version (e.g. `claude-opus-4-7`, `gpt-5.4`, `gemini-3-pro`).
 
-## Corrections a posteriori
+## Post-publication corrections
 
-Si un cas publié contient une erreur factuelle, on peut :
+If a published case contains a factual error, the options are:
 
-1. Ajouter une note d'erratum en tête d'article (horodatée)
-2. Corriger le texte et documenter la correction dans la note
+1. Add a dated erratum note at the top of the article
+2. Correct the text and document the correction in the erratum note
 
-Ne jamais modifier silencieusement un cas publié.
+Never modify a published case silently.

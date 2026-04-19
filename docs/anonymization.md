@@ -1,48 +1,48 @@
-# Anonymisation
+# Anonymization
 
-## Quand anonymiser
+## When to anonymize
 
-Un case file doit être anonymisé si :
+A case file must be anonymized if:
 
-- Il mentionne un **client** ou un **prospect** par son nom
-- Il mentionne un **partenaire ou fournisseur confidentiel** par son nom (lien commercial non public)
-- Il contient des données financières identifiables (chiffres d'affaires, prix de vente détaillés, marges par référence)
-- Il expose une personne nommée dans un contexte sensible (litige, conflit, erreur)
-- Il révèle un avantage compétitif d'une tierce partie
+- It names a **client** or a **prospect**
+- It names a **confidential partner or supplier** (a commercial relationship that isn't public)
+- It contains identifiable financial data (revenue figures, detailed sale prices, per-SKU margins)
+- It exposes a named person in a sensitive context (litigation, conflict, error)
+- It reveals a third party's competitive advantage
 
-## Ce qu'on peut garder tel quel
+## What can stay as-is
 
-- Son propre nom, ses propres projets publics
-- Les outils et services utilisés (Linear, Claude, Astro, Supabase, etc.)
-- Les **marques publiques** (éditeur, constructeur, SaaS grand public) nommées au même titre que Stripe ou Claude — un lien commercial qui n'a rien de confidentiel est nommable
-- Les patterns techniques et méthodologiques
-- Les erreurs qu'on a commises soi-même
+- Your own name, your own public projects
+- Tools and services used (Linear, Claude, Astro, Supabase, etc.)
+- **Public brands** (publisher, manufacturer, consumer SaaS) named the same way you'd name Stripe or Claude — a commercial relationship with nothing confidential about it is nameable
+- Technical and methodological patterns
+- Mistakes you made yourself
 
-Exemple : nommer un éditeur de partitions grand public dans un audit tarifaire est OK (catalogue public, tarif public). Nommer un partenaire B2B confidentiel avec qui on a un accord cadre spécifique ne l'est pas.
+Example: naming a public sheet-music publisher in a tariff audit is OK (public catalog, public tariff). Naming a confidential B2B partner you have a specific framework agreement with is not.
 
-## Techniques d'anonymisation
+## Anonymization techniques
 
-- **Remplacement nominal** : "Atelier Pellegrino" → "un luthier partenaire"
-- **Agrégation** : "141 écarts de prix" reste, mais les montants individuels sont remplacés par des ordres de grandeur
-- **Flou géographique** : "un magasin à Nantes" plutôt que nom et adresse
-- **Décalage temporel** : si la date précise identifie, arrondir au mois ou au trimestre
+- **Name replacement**: "Pellegrino Workshop" → "a partner luthier"
+- **Aggregation**: "141 price discrepancies" stays, but individual amounts are replaced by orders of magnitude
+- **Geographic blur**: "a store in Nantes" rather than name and address
+- **Temporal shift**: if the exact date identifies, round to month or quarter
 
-## Marquage
+## Marking
 
-Toujours déclarer dans le frontmatter :
+Always declare in the frontmatter:
 
 ```yaml
 anonymized: true
 ```
 
-Et préciser en fin d'article, dans un bloc court, quel type d'anonymisation a été appliqué :
+And note at the end of the article, in a short block, which type of anonymization was applied:
 
-> **Note d'anonymisation** : les noms de client et les montants ont été remplacés par des catégories génériques. La méthode et les résultats relatifs sont fidèles.
+> **Anonymization note**: client names and amounts were replaced by generic categories. The method and relative results are faithful.
 
-## Interdit
+## Forbidden
 
-- Fabriquer un cas qui n'a pas eu lieu
-- Mélanger des éléments de plusieurs cas réels sans le dire
-- Présenter un cas anonymisé sans le mentionner
+- Fabricating a case that didn't happen
+- Mixing elements of several real cases without saying so
+- Presenting an anonymized case without mentioning it
 
-Si un case file devient inpubliable même anonymisé, on ne le publie pas.
+If a case file becomes unpublishable even anonymized, we don't publish it.

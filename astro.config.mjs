@@ -3,7 +3,6 @@ import mdx from "@astrojs/mdx";
 
 export default defineConfig({
   site: "https://ai-notes.svenlc.com",
-  trailingSlash: "always",
   integrations: [mdx()],
   markdown: {
     shikiConfig: {

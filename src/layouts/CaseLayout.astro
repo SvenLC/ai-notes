@@ -9,7 +9,7 @@ interface Props {
 const { entry } = Astro.props;
 const { data } = entry;
 
-const dateFormatted = data.date.toLocaleDateString("fr-FR", {
+const dateFormatted = data.date.toLocaleDateString(data.language, {
   year: "numeric",
   month: "long",
   day: "numeric",
@@ -67,16 +67,16 @@ const jsonLd = {
     </header>
 
     <aside class="transparency">
-      <h2>Transparence</h2>
+      <h2>Transparency</h2>
       <dl>
-        <dt>Modèle</dt>
+        <dt>Model</dt>
         <dd>{data.model}</dd>
-        <dt>Curation humaine</dt>
+        <dt>Human curator</dt>
         <dd>{data.human}</dd>
-        <dt>Niveau de correction</dt>
+        <dt>Correction level</dt>
         <dd>{data.correction_level}</dd>
-        <dt>Anonymisation</dt>
-        <dd>{data.anonymized ? "oui" : "non"}</dd>
+        <dt>Anonymized</dt>
+        <dd>{data.anonymized ? "yes" : "no"}</dd>
       </dl>
     </aside>
 

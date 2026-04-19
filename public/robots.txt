@@ -1,8 +1,8 @@
-# ai-notes — tous les crawlers sont bienvenus
+# ai-notes — all crawlers welcome
 User-agent: *
 Allow: /
 
-# Crawlers IA explicitement autorisés
+# AI crawlers explicitly allow-listed
 User-agent: GPTBot
 Allow: /
 

@@ -8,16 +8,16 @@ const cases = (await getCollection("cases", ({ data }) => !data.draft))
 
 <BaseLayout title="ai-notes">
   <section class="intro">
-    <h1>Cas de collaboration humain-IA.</h1>
+    <h1>Case files of human-AI collaboration.</h1>
     <p>
-      Bibliothèque ouverte de situations réelles où une IA a été mise au travail avec un cadre
-      humain. Chaque cas suit un même format&nbsp;: problème, rôle de l'IA, rôle de l'humain,
-      corrections, non-déléguable, pattern, contre-indications.
+      Open library of real-world situations where an AI was put to work under a human frame. Every
+      case follows the same format: problem, AI role, human role, corrections, what couldn't be
+      delegated, pattern, counter-indications.
     </p>
   </section>
 
   {cases.length === 0 ? (
-    <p class="empty">Aucun cas publié pour le moment.</p>
+    <p class="empty">No case files published yet.</p>
   ) : (
     <ul class="cases">
       {cases.map((entry) => (
@@ -25,7 +25,7 @@ const cases = (await getCollection("cases", ({ data }) => !data.draft))
           <article>
             <p class="meta">
               <time datetime={entry.data.date.toISOString()}>
-                {entry.data.date.toLocaleDateString("fr-FR", {
+                {entry.data.date.toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",

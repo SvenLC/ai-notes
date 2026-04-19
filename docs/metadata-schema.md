@@ -1,85 +1,85 @@
-# Schéma des métadonnées
+# Metadata schema
 
-Chaque case file a un frontmatter YAML validé par Zod (`src/content/config.ts`). Le build échoue si un champ requis manque ou a un type incorrect.
+Every case file has a YAML frontmatter validated by Zod (`src/content/config.ts`). The build fails if a required field is missing or has the wrong type.
 
-## Identité
+## Identity
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `title` | string (non vide) | ✅ | Titre du cas |
-| `summary` | string (non vide) | ✅ | Une phrase résumant problème + résultat |
-| `date` | date (YYYY-MM-DD) | ✅ | Date de publication |
+| `title` | non-empty string | ✅ | Case title |
+| `summary` | non-empty string | ✅ | One-sentence problem + result |
+| `date` | date (YYYY-MM-DD) | ✅ | Publication date |
 
-## Classification (tags lisibles machine)
+## Classification (machine-readable tags)
 
-Tous les champs de classification acceptent uniquement des **slugs kebab-case** (`^[a-z0-9]+(-[a-z0-9]+)*$`). Le build échoue sur un slug invalide (`"Data Normalization"`, `"data_normalization"`, `"RAG"` → refusés ; `"data-normalization"`, `"erp-integration"` → acceptés).
+All classification fields accept only **kebab-case slugs** (`^[a-z0-9]+(-[a-z0-9]+)*$`). The build fails on an invalid slug (`"Data Normalization"`, `"data_normalization"`, `"RAG"` → rejected; `"data-normalization"`, `"erp-integration"` → accepted).
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `domain` | slug[] (≥1) | ✅ | Domaines métier (ex. `["retail", "finance"]`) |
-| `problem_type` | slug | ✅ | Type de problème (ex. `"price-reconciliation"`) |
-| `input_shape` | slug[] (≥1) | ✅ | Nature des entrées (ex. `["supplier-tariff-sheet"]`) |
-| `desired_outcome` | slug | ✅ | Objectif (ex. `"identify-pricing-discrepancies"`) |
+| `domain` | slug[] (≥1) | ✅ | Business domains (e.g. `["retail", "finance"]`) |
+| `problem_type` | slug | ✅ | Problem type (e.g. `"price-reconciliation"`) |
+| `input_shape` | slug[] (≥1) | ✅ | Input shape (e.g. `["supplier-tariff-sheet"]`) |
+| `desired_outcome` | slug | ✅ | Goal (e.g. `"identify-pricing-discrepancies"`) |
 
-## Rôles (tags)
+## Roles (tags)
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `ai_role` | slug[] (≥1) | ✅ | Ce qui a été confié à l'IA |
-| `human_role` | slug[] (≥1) | ✅ | Ce qui a été cadré/corrigé/validé |
+| `ai_role` | slug[] (≥1) | ✅ | What was delegated to the AI |
+| `human_role` | slug[] (≥1) | ✅ | What was framed / corrected / validated |
 
-## Contexte opérationnel
+## Operational context
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `tools_used` | string[] (≥1, non vides) | ✅ | Outils utilisés (noms courants, pas de contrainte kebab-case — ex. `["Claude", "Square POS"]`) |
-| `constraints` | slug[] | optionnel | Contraintes opérationnelles |
+| `tools_used` | string[] (≥1, non-empty) | ✅ | Tools used (common names, no kebab-case constraint — e.g. `["Claude", "Square POS"]`) |
+| `constraints` | slug[] | optional | Operational constraints |
 
 ## Validation
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `validation_mode` | slug | ✅ | Comment la sortie a été vérifiée |
-| `common_failure_modes` | slug[] | optionnel | Erreurs fréquentes observées |
+| `validation_mode` | slug | ✅ | How the output was verified |
+| `common_failure_modes` | slug[] | optional | Common failure modes observed |
 
-## Réutilisabilité
+## Reusability
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `transferability` | `"high"` \| `"medium"` \| `"low"` | ✅ | Degré de transposabilité |
-| `when_not_to_use` | slug[] | optionnel | Contre-indications |
-| `actionable_takeaways` | string[] (non vides) | optionnel | Leçons concrètes en prose |
+| `transferability` | `"high"` \| `"medium"` \| `"low"` | ✅ | Transposability level |
+| `when_not_to_use` | slug[] | optional | Counter-indications |
+| `actionable_takeaways` | non-empty string[] | optional | Concrete, prose takeaways |
 
-## Transparence
+## Transparency
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `model` | string (non vide) | ✅ | Modèle IA utilisé (ex. `claude-opus-4-7`, `gpt-5.4`) |
-| `human` | string (non vide) | ✅ | Humain qui a cadré/validé |
-| `correction_level` | `"minimal"` \| `"moderate"` \| `"substantial"` | ✅ | Niveau de correction humaine |
-| `anonymized` | boolean | défaut `false` | Cas anonymisé |
+| `model` | non-empty string | ✅ | AI model used (e.g. `claude-opus-4-7`, `gpt-5.4`) |
+| `human` | non-empty string | ✅ | Human who framed / validated |
+| `correction_level` | `"minimal"` \| `"moderate"` \| `"substantial"` | ✅ | Level of human correction |
+| `anonymized` | boolean | default `false` | Case is anonymized |
 
-## Métadonnées techniques
+## Technical metadata
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `language` | `"fr"` \| `"en"` | défaut `"fr"` | Langue du contenu |
-| `type` | `"case-file"` | défaut `"case-file"` | Type de contenu (extensible plus tard) |
+| `language` | `"fr"` \| `"en"` | default `"en"` | Content language |
+| `type` | `"case-file"` | default `"case-file"` | Content type (extensible later) |
 
-## Publication
+## Publishing
 
-| Champ | Type | Requis | Description |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `draft` | boolean | défaut `true` | Article en brouillon (non publié). Fail-closed : un oubli = non publié plutôt que publié par erreur. |
+| `draft` | boolean | default `true` | Draft status (unpublished). Fail-closed: a missing flag means unpublished rather than accidentally published. |
 
 ## Prose vs tag
 
-| Type de champ | Format attendu |
+| Field class | Expected format |
 |---|---|
-| Tags / classification (`domain`, `problem_type`, `input_shape`, `desired_outcome`, `ai_role`, `human_role`, `constraints`, `validation_mode`, `common_failure_modes`, `when_not_to_use`) | **slugs kebab-case** — validé par regex, facilite le matching par un agent qui cherche des cas proches |
-| Phrases humaines (`title`, `summary`, `actionable_takeaways`) | **prose naturelle**, lisible pour un humain |
-| Noms propres (`tools_used`, `model`, `human`) | noms courants tels qu'utilisés dans l'industrie, contrainte `min(1)` uniquement |
+| Tags / classification (`domain`, `problem_type`, `input_shape`, `desired_outcome`, `ai_role`, `human_role`, `constraints`, `validation_mode`, `common_failure_modes`, `when_not_to_use`) | **kebab-case slugs** — regex-validated, enables agent matching for similar cases |
+| Human prose (`title`, `summary`, `actionable_takeaways`) | **natural prose**, human-readable |
+| Proper names (`tools_used`, `model`, `human`) | common names as used in the industry, `min(1)` constraint only |
 
-## Exemple
+## Example
 
-Voir `src/content/cases/audit-tarifaire-billaudot-141-ecarts.mdx` pour un cas réel complet. Le template pour créer un nouveau case file est dans `templates/case-file.mdx`.
+See `src/content/cases/audit-tarifaire-billaudot-mauvais-champ.mdx` for a complete real case. The template for a new case file lives in `templates/case-file.mdx`.

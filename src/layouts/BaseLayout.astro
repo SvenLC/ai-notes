@@ -7,14 +7,14 @@ interface Props {
 
 const {
   title,
-  description = "Bibliothèque de cas réels de collaboration humain-IA.",
+  description = "Open library of real-world human-AI collaboration case files.",
   ogType = "website",
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,7 +29,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta property="og:url" content={canonical} />
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="ai-notes" />
-    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
@@ -43,8 +43,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <header class="site-header">
       <a href="/" class="site-title">ai-notes</a>
       <nav>
-        <a href="/">Cas</a>
-        <a href="/about">À propos</a>
+        <a href="/">Case files</a>
+        <a href="/about">About</a>
       </nav>
     </header>
     <main>
@@ -52,9 +52,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     </main>
     <footer>
       <p>
-        <a href="https://github.com/svenlc/ai-notes">Source sur GitHub</a>
+        <a href="https://github.com/SvenLC/ai-notes">Source on GitHub</a>
         &middot;
-        Contenu CC BY-SA 4.0
+        Content CC BY-SA 4.0
         &middot;
         Code MIT
       </p>

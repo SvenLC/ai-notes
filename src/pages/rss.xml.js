@@ -9,7 +9,7 @@ export async function GET(context) {
   return rss({
     title: "ai-notes",
     description:
-      "Bibliothèque ouverte de cas réels de collaboration humain-IA. Chaque case file documente où l'IA aide, se trompe, et ce qui n'est pas déléguable.",
+      "Open library of real-world human-AI collaboration case files. Every case documents where the AI helps, where it fails, and what can't be delegated.",
     site: context.site,
     items: cases.map((entry) => ({
       title: entry.data.title,
@@ -18,6 +18,6 @@ export async function GET(context) {
       link: `/cases/${entry.slug}/`,
       categories: entry.data.domain,
     })),
-    customData: "<language>fr-FR</language>",
+    customData: "<language>en-US</language>",
   });
 }
