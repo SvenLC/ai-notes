@@ -1,0 +1,22 @@
+services:
+  api:
+    command: pnpm --filter @open-case-memory/api dev
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+
+  web:
+    command: pnpm --filter @open-case-memory/web dev
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+
+  mcp:
+    command: pnpm --filter @open-case-memory/mcp dev
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/apps/mcp/node_modules

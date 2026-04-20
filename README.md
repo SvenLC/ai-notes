@@ -1,69 +1,63 @@
-# ai-notes
+# Open Case Memory
 
-Bibliothèque ouverte de cas réels de collaboration humain-IA.
+Open-source platform to document, publish, and serve reusable case precedents for AI agents.
 
-## Ce que c'est
+A Git-friendly, schema-first, MCP-ready platform for turning conversations, workflows, and operational incidents into structured case files that both humans and agents can use.
 
-Des case files documentés rigoureusement — où l'IA aide, accélère, structure, se trompe — et comment l'humain garde la maîtrise du résultat.
+## Status
 
-Double lisibilité : lisible par un humain, consommable par un agent (web search, RAG, MCP).
+**Scaffolding stage.** The repository currently contains only the monorepo skeleton, Docker configuration, and stub applications. Nothing runs end-to-end yet.
 
-## Ce que ça n'est pas
+## Architecture
 
-- Un blog corporate
-- Un canal d'acquisition déguisé
-- Un média d'opinion sur l'IA
-- Un exercice d'anthropomorphisme
-- Un catalogue de prompts
-- Une collection de démos impressionnantes sans ancrage métier
+```
+apps/
+  web/     Next.js UI
+  api/     Fastify REST API
+  mcp/     MCP server
+packages/
+  schema/  Shared Zod schemas and types
+  ui/      Shared UI components
+  config/  Shared configuration
+  prompts/ Canonical prompts
+infra/
+  docker/
+  migrations/
+docs/
+  protocol.md
+  template.md
+  architecture.md
+examples/
+  seed-cases/
+```
 
-## Format — case file en 9 points
+## Requirements
 
-1. Problème
-2. Contexte
-3. Rôle de l'IA
-4. Rôle de l'humain
-5. Ce qui a été produit
-6. Ce qui a demandé correction
-7. Ce qui n'était pas déléguable
-8. Pattern réutilisable
-9. Quand ne pas réutiliser cette approche
+- Node.js 20+
+- pnpm 10
+- Docker + Docker Compose
 
-Un bloc **Contexte machine** en fin d'article résume étapes, points de vigilance, limites et contextes proches pour l'indexation par agents.
+## Quick start
 
-## Principes
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
-- **Transparence** : modèle utilisé, humain qui a cadré/validé, niveau de correction, anonymisation déclarée par article.
-- **Voix du modèle préservée** : pas de gros system prompt pour lisser le ton. Le cadre structure (9 points + métadonnées), l'IA parle comme elle parle. Un article écrit par Claude sonnera Claude, un par GPT sonnera GPT.
-- **Curation, pas rédaction** : le rôle humain c'est choisir quoi publier, vérifier les faits, refuser le mauvais. Pas de réécriture.
+Once the stubs are fleshed out:
 
-## Stack
+- Web: http://localhost:3000
+- API: http://localhost:4000
+- MCP: http://localhost:4100
+- Postgres: localhost:5432
 
-- Astro + MDX (SSG)
-- Content collections typées (Zod)
-- Vercel (free tier)
-- Serveur MCP (à venir) pour exposer les cas aux agents
-- JSON-LD / Schema.org pour le web (à venir)
-
-## Développement
+## Development
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:4321
-pnpm build
-pnpm preview
+pnpm dev
 ```
-
-## Créer un nouveau case file
-
-1. Copier `templates/case-file.mdx` vers `src/content/cases/<slug>.mdx`
-2. Remplir les métadonnées du frontmatter
-3. Remplir les 9 sections + le bloc **Contexte machine**
-4. Passer `draft: false` quand prêt
-
-Voir [`docs/editorial.md`](./docs/editorial.md) pour les conventions éditoriales, [`docs/anonymization.md`](./docs/anonymization.md) pour l'anonymisation, [`docs/metadata-schema.md`](./docs/metadata-schema.md) pour le schéma complet des métadonnées.
 
 ## License
 
-- Code : MIT (à confirmer)
-- Contenu : CC BY-SA 4.0 (à confirmer)
+MIT (see [LICENSE](./LICENSE)).

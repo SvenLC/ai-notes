@@ -1,21 +1,14 @@
 {
-  "name": "ai-notes",
+  "name": "open-case-memory",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/mdx": "^3.1.9",
-    "@astrojs/rss": "^4.0.9",
-    "@astrojs/sitemap": "^3.2.1",
-    "astro": "^4.16.13"
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "start": "pnpm -r --parallel run start",
+    "lint": "pnpm -r run lint",
+    "typecheck": "pnpm -r run typecheck"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

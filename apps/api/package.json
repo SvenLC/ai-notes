@@ -1,0 +1,23 @@
+{
+  "name": "@open-case-memory/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.0.0",
+    "@open-case-memory/schema": "workspace:*",
+    "@open-case-memory/config": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.16.5"
+  }
+}
