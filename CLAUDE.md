@@ -75,6 +75,36 @@ All classification tags are **kebab-case slugs** validated by a Zod regex (`^[a-
 
 When adding a new case, none of these files need manual updates — all are generated from the content collection at build.
 
+## CI
+
+GitHub Actions runs `pnpm build` on every push and PR against `main` — this validates the Zod content schema against every case file's frontmatter and ensures pages/endpoints render. If a contributor adds an invalid slug or forgets a required field, CI fails.
+
+Defined in `.github/workflows/build.yml`.
+
+## IndexNow
+
+A key file lives at `/78f7c85d69f48be7b41504f472fac02a.txt` (publicly served) — this validates our ownership for the IndexNow protocol, accepted by Bing, Yandex, and Seznam.
+
+**Manual notification on publish** (until we wire it into CI) :
+```bash
+curl -X POST "https://api.indexnow.org/indexnow" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "host": "www.svenlc.com",
+    "key": "78f7c85d69f48be7b41504f472fac02a",
+    "keyLocation": "https://www.svenlc.com/78f7c85d69f48be7b41504f472fac02a.txt",
+    "urlList": [
+      "https://www.svenlc.com/cases/<new-slug>/",
+      "https://www.svenlc.com/",
+      "https://www.svenlc.com/sitemap.xml"
+    ]
+  }'
+```
+
+## Author page
+
+`/author/sven/` exposes a `ProfilePage` with a full `Person` JSON-LD node (jobTitle, worksFor, description, sameAs). The Transparency aside on every case page links the human curator name to this page, strengthening the E-E-A-T entity graph.
+
 ## Analytics
 
 Vercel Web Analytics is wired via `@vercel/analytics/astro` — the `<Analytics />` component renders just before `</body>` in `BaseLayout.astro`. It's a no-op in dev (auto-detected by the package).
@@ -104,9 +134,9 @@ pnpm preview
 ## Deferred work (Phase 2+ / backlog)
 
 - MCP server exposing case files (tools: `list_cases`, `get_case`, `search_cases`)
-- CI running `pnpm build` + `astro check` as the test gate
 - **OpenGraph / Article `image` per case** (dynamic generation via Satori, Vercel OG, or pre-built static per case). Currently missing → site is not eligible for Google Article rich results until we add this.
 - **TL;DR / 40-60-word answer** as a new section 0 at the top of each case. Improves pull-quote extraction by ChatGPT / Perplexity.
-- **Author profile page** (`/author/sven/`) with full `Person` JSON-LD + sameAs (LinkedIn, X, YouTube) — strengthens E-E-A-T entity graph.
+- **Author profile `sameAs` expansion** — the current page lists GitHub only. Add LinkedIn, X, YouTube, etc. as Sven's presences grow, to strengthen the entity graph further.
 - Controlled vocabulary for `validation_mode` / `problem_type` (switch from free slug to enum once vocabulary stabilizes)
-- IndexNow protocol for faster Bing/Yandex discovery
+- **IndexNow notification automated on publish** — currently manual (see above). Wire into a GitHub Action post-deploy or a Vercel deploy hook.
+- `astro check` in CI — requires adding `@astrojs/check` + `typescript` deps ; not critical since Zod covers content invariants.

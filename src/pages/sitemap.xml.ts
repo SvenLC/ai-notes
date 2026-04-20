@@ -20,6 +20,7 @@ export const GET: APIRoute = async ({ site }) => {
   const entries = [
     { path: "/", changefreq: "weekly", priority: "1.0" },
     { path: "/about/", changefreq: "monthly", priority: "0.6" },
+    { path: "/author/sven/", changefreq: "monthly", priority: "0.5" },
     ...cases.map((entry) => ({
       path: `/cases/${entry.slug}/`,
       lastmod: entry.data.date.toISOString(),

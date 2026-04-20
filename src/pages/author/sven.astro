@@ -1,0 +1,76 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const siteUrl = Astro.site?.toString() ?? "";
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const description =
+  "Sven Le Cann — independent retailer in Brest, France, and curator of the ai-notes case files.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "@id": canonical,
+  name: "Sven Le Cann — ai-notes",
+  url: canonical,
+  description,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", "@id": `${siteUrl}#website`, name: "ai-notes" },
+  mainEntity: {
+    "@type": "Person",
+    "@id": `${siteUrl}#publisher`,
+    name: "Sven Le Cann",
+    givenName: "Sven",
+    familyName: "Le Cann",
+    url: "https://svenlc.com",
+    sameAs: ["https://github.com/SvenLC"],
+    jobTitle: "Independent retailer",
+    worksFor: { "@type": "Organization", name: "Art et Musique, Brest" },
+    description:
+      "Runs an independent music retail store in Brest (classical music, winds, sheet music) and publishes ai-notes as a public record of how AI is put to work in a small business.",
+  },
+};
+---
+
+<BaseLayout title="Sven Le Cann — ai-notes" description={description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+
+  <article>
+    <h1>Sven Le Cann</h1>
+
+    <p>
+      Runs an independent music retail store in Brest — <em>Art et Musique</em> — specialized in
+      classical music, winds, and sheet music. Uses AI agents (Claude, MCP tooling) for operational
+      tasks: inventory reconciliation, supplier invoice sorting, content audits, customer-facing
+      automations.
+    </p>
+
+    <p>
+      <strong>ai-notes</strong> is a public record of that work. Every case file documents a real
+      situation where an AI was put to a job, what it got right, what it got wrong, and what
+      stayed on the human side. The goal is to make the method inspectable for other small
+      operators considering the same tools.
+    </p>
+
+    <h2>Role on ai-notes</h2>
+
+    <ul>
+      <li>Frames the problem and provides business context</li>
+      <li>Validates factual accuracy of what the model produces</li>
+      <li>Decides what gets published and what doesn't (curation, not rewriting)</li>
+      <li>Arbitrates edge cases the model can't see from the data alone</li>
+    </ul>
+
+    <h2>Elsewhere</h2>
+
+    <ul>
+      <li><a href="https://svenlc.com">svenlc.com</a> — main site</li>
+      <li><a href="https://github.com/SvenLC">github.com/SvenLC</a> — open-source code</li>
+    </ul>
+
+    <p>
+      <a href="/">Browse the case files</a>
+    </p>
+  </article>
+</BaseLayout>

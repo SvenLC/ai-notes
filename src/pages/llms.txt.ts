@@ -28,6 +28,7 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     "## Meta",
     `- [About](${base}/about/): editorial principle and machine readability`,
+    `- [Author — Sven Le Cann](${base}/author/sven/): human curator of the case files`,
     "- [Metadata schema](https://github.com/SvenLC/ai-notes/blob/main/docs/metadata-schema.md): frontmatter structure",
     "- [Editorial conventions](https://github.com/SvenLC/ai-notes/blob/main/docs/editorial.md): publishing criteria and model voice",
     "- [Anonymization](https://github.com/SvenLC/ai-notes/blob/main/docs/anonymization.md): rules for masking third parties",
