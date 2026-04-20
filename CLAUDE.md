@@ -75,6 +75,16 @@ All classification tags are **kebab-case slugs** validated by a Zod regex (`^[a-
 
 When adding a new case, none of these files need manual updates — all are generated from the content collection at build.
 
+## Analytics
+
+Vercel Web Analytics is wired via `@vercel/analytics/astro` — the `<Analytics />` component renders just before `</body>` in `BaseLayout.astro`. It's a no-op in dev (auto-detected by the package).
+
+For analytics data to actually flow in production :
+1. In Vercel dashboard → Project → Analytics → **Enable Web Analytics**
+2. Next deploy will start collecting page views
+
+Note on CSP : `script-src` includes `'unsafe-inline'` because the Analytics custom element injects an inline bootstrap script. This is a deliberate trade-off — the site has zero user input and all content is under git control, so the XSS surface is negligible. The meaningful security headers here are `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and `Permissions-Policy`.
+
 ## Commands
 
 ```bash

@@ -1,4 +1,6 @@
 ---
+import Analytics from "@vercel/analytics/astro";
+
 interface Props {
   title: string;
   description?: string;
@@ -64,6 +66,7 @@ const canonical = noindex ? null : new URL(Astro.url.pathname, Astro.site).toStr
         Code MIT
       </p>
     </footer>
+    <Analytics />
     <style is:global>
       :root {
         --font-body: ui-serif, Georgia, "Times New Roman", serif;
